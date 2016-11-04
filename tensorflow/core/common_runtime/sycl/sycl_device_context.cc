@@ -13,10 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+#ifdef TENSORFLOW_USE_SYCL
+
 #include "tensorflow/core/common_runtime/sycl/sycl_device_context.h"
 #include "tensorflow/core/common_runtime/dma_helper.h"
-
-#ifdef // TENSORFLOW_USE_SYCL 
 
 namespace tensorflow {
 
