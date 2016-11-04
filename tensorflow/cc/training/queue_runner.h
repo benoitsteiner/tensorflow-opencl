@@ -60,10 +60,7 @@ class QueueRunner : public RunnerInterface {
   // otherwise returns the first captured failure status.
   Status Join() final;
 
-  // Returns the lastest status.
-  Status GetStatus();
-
-  // Returns the lastest status.
+  // Returns the latest status.
   Status GetStatus();
 
  private:
