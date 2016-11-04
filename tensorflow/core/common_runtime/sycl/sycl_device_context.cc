@@ -13,19 +13,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#if TENSORFLOW_USE_SYCL
-
 #include "tensorflow/core/common_runtime/sycl/sycl_device_context.h"
 #include "tensorflow/core/common_runtime/dma_helper.h"
 
-#define EIGEN_USE_SYCL
-#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
+#ifdef // TENSORFLOW_USE_SYCL 
 
 namespace tensorflow {
 
 void SYCLDeviceContext::CopyCPUTensorToDevice(const Tensor* cpu_tensor, Device* device,
-                                              Tensor* device_tensor,
-                                              StatusCallback done) const {
+					      Tensor* device_tensor,
+					      StatusCallback done) const {
   const int64 total_bytes = cpu_tensor->TotalBytes();
   if (total_bytes > 0) {
     const void* src_ptr = DMAHelper::base(cpu_tensor);
@@ -36,11 +33,12 @@ void SYCLDeviceContext::CopyCPUTensorToDevice(const Tensor* cpu_tensor, Device* 
 }
   
 void SYCLDeviceContext::CopyDeviceTensorToCPU(const Tensor* device_tensor, StringPiece edge_name,
-                                              Device* device, Tensor* cpu_tensor,
-                                              StatusCallback done) {
+					      Device* device, Tensor* cpu_tensor,
+					      StatusCallback done) {
+  device->eigen_sycl_device()->deallocate_all();
+
   const int64 total_bytes = device_tensor->TotalBytes();
   if (total_bytes > 0) {
-    device->eigen_sycl_device()->deallocate_all();
     const void* src_ptr = DMAHelper::base(device_tensor);
     void* dst_ptr = DMAHelper::base(cpu_tensor);
     ::memcpy(dst_ptr, src_ptr, total_bytes);
@@ -49,4 +47,5 @@ void SYCLDeviceContext::CopyDeviceTensorToCPU(const Tensor* device_tensor, Strin
 }
 
 }  // namespace tensorflow
+
 #endif // TENSORFLOW_USE_SYCL
