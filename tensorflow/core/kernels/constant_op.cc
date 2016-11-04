@@ -16,6 +16,9 @@ limitations under the License.
 // See docs in ../ops/array_ops.cc.
 
 #define EIGEN_USE_THREADS
+#if TENSORFLOW_USE_SYCL
+#define EIGEN_USE_SYCL
+#endif
 
 #include "tensorflow/core/kernels/constant_op.h"
 
@@ -57,8 +60,9 @@ REGISTER_KERNEL_BUILDER(Name("Const").Device(DEVICE_CPU), ConstantOp);
                           Name("Const")                               \
                           .Device(DEVICE_SYCL)                        \
                           .TypeConstraint<TYPE>("dtype"),             \
-			  ConstantOp);
+                          ConstantOp);
 TF_CALL_NUMBER_TYPES(REGISTER_SYCL_KERNEL);
+#undef REGISTER_SYCL_KERNEL
 #endif
 
 #if GOOGLE_CUDA
