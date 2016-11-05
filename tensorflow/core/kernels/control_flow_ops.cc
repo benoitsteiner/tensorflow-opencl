@@ -259,6 +259,14 @@ REGISTER_GPU_REF_KERNEL(bool);
 #undef REGISTER_GPU_KERNEL
 #undef REGISTER_GPU_REF_KERNEL
 
+#if TENSORFLOW_USE_SYCL
+#define REGISTER_SYCL_KERNEL(type)  \
+  REGISTER_KERNEL_BUILDER(          \
+      Name("Enter").Device(DEVICE_SYCL).TypeConstraint<type>("T"), EnterOp)
+REGISTER_SYCL_KERNEL(bool);
+#undef REGISTER_SYCL_KERNEL
+#endif
+
 // Special GPU kernels for int32 and string.
 // TODO(b/25387198): Also enable int32 in device memory. This kernel
 // registration requires all int32 inputs and outputs to be in host memory.
