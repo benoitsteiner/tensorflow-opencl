@@ -13,11 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {BoundingBox, CollisionGrid} from './label';
-import {RenderContext} from './renderContext';
 import {DataSet} from './data';
+import {BoundingBox, CollisionGrid} from './label';
+import {CameraType, RenderContext} from './renderContext';
 import {ScatterPlotVisualizer} from './scatterPlotVisualizer';
-import {getProjectedPointFromIndex, vector3DToScreenCoords} from './util';
+import * as util from './util';
 
 const MAX_LABELS_ON_SCREEN = 10000;
 
@@ -27,11 +27,10 @@ const MAX_LABELS_ON_SCREEN = 10000;
  */
 export class ScatterPlotVisualizerCanvasLabels implements
     ScatterPlotVisualizer {
-  private dataSet: DataSet;
+  private worldSpacePointPositions: Float32Array;
   private gc: CanvasRenderingContext2D;
   private canvas: HTMLCanvasElement;
   private labelsActive: boolean = true;
-  private sceneIs3D: boolean = true;
 
   constructor(container: d3.Selection<any>) {
     this.canvas = container.append('canvas').node() as HTMLCanvasElement;
@@ -51,6 +50,8 @@ export class ScatterPlotVisualizerCanvasLabels implements
     if ((rc.labels == null) || (rc.labels.pointIndices.length === 0)) {
       return;
     }
+
+    const sceneIs3D: boolean = (rc.cameraType === CameraType.Perspective);
 
     let strokeStylePrefix: string;
     let fillStylePrefix: string;
@@ -78,6 +79,7 @@ export class ScatterPlotVisualizerCanvasLabels implements
 
     const camPos = rc.camera.position;
     const camToTarget = camPos.clone().sub(rc.cameraTarget);
+    let camToPoint = new THREE.Vector3();
 
     this.gc.lineWidth = 6;
     this.gc.textBaseline = 'middle';
@@ -91,22 +93,23 @@ export class ScatterPlotVisualizerCanvasLabels implements
     const n = Math.min(MAX_LABELS_ON_SCREEN, rc.labels.pointIndices.length);
     for (let i = 0; i < n; ++i) {
       const index = rc.labels.pointIndices[i];
-      const point = getProjectedPointFromIndex(this.dataSet, index);
+      const point =
+          util.vector3FromPackedArray(this.worldSpacePointPositions, index);
 
       // discard points that are behind the camera
-      const camToPoint = camPos.clone().sub(point);
+      camToPoint.copy(camPos).sub(point);
       if (camToTarget.dot(camToPoint) < 0) {
         continue;
       }
 
-      let [x, y] = vector3DToScreenCoords(
+      let [x, y] = util.vector3DToScreenCoords(
           rc.camera, rc.screenWidth, rc.screenHeight, point);
       x += xShift;
 
       // Computing the width of the font is expensive,
       // so we assume width of 1 at first. Then, if the label doesn't
       // conflict with other labels, we measure the actual width.
-      const textBoundingBox = {
+      const textBoundingBox: BoundingBox = {
         loX: x - labelMargin,
         hiX: x + 1 + labelMargin,
         loY: y - labelHeight / 2 - labelMargin,
@@ -123,7 +126,7 @@ export class ScatterPlotVisualizerCanvasLabels implements
         textBoundingBox.hiX += this.gc.measureText(text).width - 1;
         if (grid.insert(textBoundingBox)) {
           let opacity = 1;
-          if (this.sceneIs3D && (rc.labels.useSceneOpacityFlags[i] === 1)) {
+          if (sceneIs3D && (rc.labels.useSceneOpacityFlags[i] === 1)) {
             opacity = opacityMap(camToPoint.length());
           }
           this.gc.strokeStyle = strokeStylePrefix + opacity + ')';
@@ -135,11 +138,6 @@ export class ScatterPlotVisualizerCanvasLabels implements
     }
   }
 
-  onDataSet(dataSet: DataSet) {
-    this.labelsActive = (dataSet.spriteAndMetadataInfo.spriteImage == null);
-    this.dataSet = dataSet;
-  }
-
   onResize(newWidth: number, newHeight: number) {
     let dpr = window.devicePixelRatio;
     d3.select(this.canvas)
@@ -148,16 +146,14 @@ export class ScatterPlotVisualizerCanvasLabels implements
         .style({width: newWidth + 'px', height: newHeight + 'px'});
   }
 
-  onRecreateScene(
-      scene: THREE.Scene, sceneIs3D: boolean, backgroundColor: number) {
-    this.sceneIs3D = sceneIs3D;
-  }
-
-  removeAllFromScene(scene: THREE.Scene) {
+  dispose() {
     this.removeAllLabels();
+    this.canvas = null;
+    this.gc = null;
   }
 
-  onUpdate() {
+  onPointPositionsChanged(newPositions: Float32Array, dataSet: DataSet) {
+    this.worldSpacePointPositions = newPositions;
     this.removeAllLabels();
   }
 
@@ -170,6 +166,7 @@ export class ScatterPlotVisualizerCanvasLabels implements
     this.makeLabels(rc);
   }
 
+  setScene(scene: THREE.Scene) {}
   onPickingRender(renderContext: RenderContext) {}
   onSetLabelAccessor(labelAccessor: (index: number) => string) {}
 }

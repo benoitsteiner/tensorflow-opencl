@@ -475,7 +475,7 @@ Returns x / y element-wise.
 
 #### `tf.Variable.__floordiv__(a, *args)` {#Variable.__floordiv__}
 
-Divides `x / y` elementwise, rounding down for floating point.
+Divides `x / y` elementwise, rounding toward the most negative integer.
 
 The same as `tf.div(x,y)` for integers, but uses `tf.floor(tf.div(x,y))` for
 floating point arguments so that the result is always an integer (though
@@ -549,7 +549,7 @@ For example,
 import tensorflow as tf
 A = tf.Variable([[1,2,3], [4,5,6], [7,8,9]], dtype=tf.float32)
 with tf.Session() as sess:
-  sess.run(tf.initialize_all_variables())
+  sess.run(tf.global_variables_initializer())
   print sess.run(A[:2, :2]) # => [[1,2], [4,5]]
 
   op = A[:2,:2].assign(22. * tf.ones((2, 2)))
@@ -838,7 +838,7 @@ Returns x / y element-wise.
 
 #### `tf.Variable.__rfloordiv__(a, *args)` {#Variable.__rfloordiv__}
 
-Divides `x / y` elementwise, rounding down for floating point.
+Divides `x / y` elementwise, rounding toward the most negative integer.
 
 The same as `tf.div(x,y)` for integers, but uses `tf.floor(tf.div(x,y))` for
 floating point arguments so that the result is always an integer (though
@@ -1007,6 +1007,13 @@ and `int64` (matching the behavior of Numpy).
 #### `tf.Variable.__rxor__(a, *args)` {#Variable.__rxor__}
 
 x ^ y = (x | y) & ~(x & y).
+
+
+- - -
+
+#### `tf.Variable.__str__()` {#Variable.__str__}
+
+
 
 
 - - -

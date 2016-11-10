@@ -40,7 +40,7 @@ class SavedModelTest(tf.test.TestCase):
 
   def _init_and_validate_variable(self, sess, variable_name, variable_value):
     v = tf.Variable(variable_value, name=variable_name)
-    sess.run(tf.initialize_all_variables())
+    sess.run(tf.global_variables_initializer())
     self.assertEqual(variable_value, v.eval())
 
   def _build_asset_collection(self, asset_file_name, asset_file_contents,
@@ -119,19 +119,22 @@ class SavedModelTest(tf.test.TestCase):
     # Restore the graph with a single predefined tag whose variables were saved.
     with self.test_session(graph=tf.Graph()) as sess:
       loader.load(sess, [tag_constants.TRAINING], export_dir)
-      self.assertEqual(42, tf.get_collection(tf.GraphKeys.VARIABLES)[0].eval())
+      self.assertEqual(
+          42, tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)[0].eval())
 
     # Restore the graph with a single predefined tag whose variables were not
     # saved.
     with self.test_session(graph=tf.Graph()) as sess:
       loader.load(sess, [tag_constants.SERVING], export_dir)
-      self.assertEqual(42, tf.get_collection(tf.GraphKeys.VARIABLES)[0].eval())
+      self.assertEqual(
+          42, tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)[0].eval())
 
     # Restore the graph with multiple tags. Provide duplicate tags to test set
     # semantics.
     with self.test_session(graph=tf.Graph()) as sess:
       loader.load(sess, ["foo", "bar", "foo"], export_dir)
-      self.assertEqual(42, tf.get_collection(tf.GraphKeys.VARIABLES)[0].eval())
+      self.assertEqual(
+          42, tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)[0].eval())
 
     # Try restoring a graph with a non-existent tag. This should yield a runtime
     # error.
@@ -177,7 +180,7 @@ class SavedModelTest(tf.test.TestCase):
     # Restore the graph with tag "foo", whose variables were saved.
     with self.test_session(graph=tf.Graph()) as sess:
       loader.load(sess, ["foo"], export_dir)
-      collection_vars = tf.get_collection(tf.GraphKeys.VARIABLES)
+      collection_vars = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
       self.assertEqual(len(collection_vars), 2)
       self.assertEqual(1, collection_vars[0].eval())
       self.assertEqual(2, collection_vars[1].eval())
@@ -187,7 +190,7 @@ class SavedModelTest(tf.test.TestCase):
     # checkpointed value.
     with self.test_session(graph=tf.Graph()) as sess:
       loader.load(sess, ["bar"], export_dir)
-      collection_vars = tf.get_collection(tf.GraphKeys.VARIABLES)
+      collection_vars = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
       self.assertEqual(len(collection_vars), 1)
       self.assertEqual(2, collection_vars[0].eval())
 
@@ -214,7 +217,8 @@ class SavedModelTest(tf.test.TestCase):
     # Restore the graph with tag "foo", whose variables were saved.
     with self.test_session(graph=tf.Graph()) as sess:
       loader.load(sess, ["foo"], export_dir)
-      self.assertEqual(42, tf.get_collection(tf.GraphKeys.VARIABLES)[0].eval())
+      self.assertEqual(
+          42, tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)[0].eval())
 
     # An attempt to create another builder with the same export directory should
     # result in an assertion error.
@@ -243,12 +247,14 @@ class SavedModelTest(tf.test.TestCase):
     # Restore the graph with tag "foo", whose variables were saved.
     with self.test_session(graph=tf.Graph()) as sess:
       loader.load(sess, ["foo"], export_dir)
-      self.assertEqual(42, tf.get_collection(tf.GraphKeys.VARIABLES)[0].eval())
+      self.assertEqual(
+          42, tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)[0].eval())
 
     # Restore the graph with tag "bar", whose variables were not saved.
     with self.test_session(graph=tf.Graph()) as sess:
       loader.load(sess, ["bar"], export_dir)
-      self.assertEqual(42, tf.get_collection(tf.GraphKeys.VARIABLES)[0].eval())
+      self.assertEqual(
+          42, tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)[0].eval())
 
   def testCollections(self):
     export_dir = os.path.join(tf.test.get_temp_dir(), "test_collections")
@@ -259,7 +265,7 @@ class SavedModelTest(tf.test.TestCase):
     with self.test_session(graph=tf.Graph()) as sess:
       v = tf.Variable(42, name="v")
       tf.add_to_collection("foo_vars", v)
-      sess.run(tf.initialize_all_variables())
+      sess.run(tf.global_variables_initializer())
       self.assertEqual(42, v.eval())
       builder.add_meta_graph_and_variables(sess, ["foo"])
 
@@ -269,7 +275,7 @@ class SavedModelTest(tf.test.TestCase):
     with self.test_session(graph=tf.Graph()) as sess:
       v = tf.Variable(43, name="v")
       tf.add_to_collection("bar_vars", v)
-      sess.run(tf.initialize_all_variables())
+      sess.run(tf.global_variables_initializer())
       self.assertEqual(43, v.eval())
       builder.add_meta_graph(["bar"])
 
@@ -334,7 +340,8 @@ class SavedModelTest(tf.test.TestCase):
     # corresponding to "foo_key" should exist.
     with self.test_session(graph=tf.Graph()) as sess:
       foo_graph = loader.load(sess, ["foo"], export_dir)
-      self.assertEqual(42, tf.get_collection(tf.GraphKeys.VARIABLES)[0].eval())
+      self.assertEqual(
+          42, tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)[0].eval())
 
       foo_signature = foo_graph.signature_def
       self.assertEqual(len(foo_signature), 1)
@@ -345,7 +352,8 @@ class SavedModelTest(tf.test.TestCase):
     # new value of "foo_key".
     with self.test_session(graph=tf.Graph()) as sess:
       bar_graph = loader.load(sess, ["bar"], export_dir)
-      self.assertEqual(42, tf.get_collection(tf.GraphKeys.VARIABLES)[0].eval())
+      self.assertEqual(
+          42, tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)[0].eval())
 
       bar_signature = bar_graph.signature_def
       self.assertEqual(len(bar_signature), 2)
@@ -405,7 +413,7 @@ class SavedModelTest(tf.test.TestCase):
       assign_v3 = tf.assign(v3, tf.add(v1, v2))
       legacy_init_op = tf.group(assign_v3, name="legacy_init_op")
 
-      sess.run(tf.initialize_all_variables())
+      sess.run(tf.global_variables_initializer())
       builder.add_meta_graph_and_variables(
           sess, ["foo"], legacy_init_op=legacy_init_op)
 
@@ -533,7 +541,7 @@ class SavedModelTest(tf.test.TestCase):
       tf.add_to_collection("v", v3)
       tf.add_to_collection("init_op", init_op)
 
-      sess.run(tf.initialize_all_variables())
+      sess.run(tf.global_variables_initializer())
       self.assertEqual(1, tf.get_collection("v")[0].eval())
       self.assertEqual(2, tf.get_collection("v")[1].eval())
 
@@ -574,7 +582,8 @@ class SavedModelTest(tf.test.TestCase):
     # without any device information.
     with self.test_session(graph=tf.Graph()) as sess:
       loader.load(sess, [tag_constants.TRAINING], export_dir)
-      self.assertEqual(42, tf.get_collection(tf.GraphKeys.VARIABLES)[0].eval())
+      self.assertEqual(
+          42, tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)[0].eval())
 
 
 if __name__ == "__main__":

@@ -29,8 +29,8 @@ import os
 import shutil
 import tempfile
 import threading
-import zlib
 
+import numpy as np
 from six import BytesIO
 from six.moves import http_client
 from six.moves import xrange  # pylint: disable=redefined-builtin
@@ -264,9 +264,11 @@ class TensorboardServerTest(tf.test.TestCase):
     if 'projector' not in REGISTERED_PLUGINS:
       return
 
-    tensor_tsv = (self._get('/data/plugin/projector/tensor?run=run1&name=var1')
-                  .read())
-    self.assertEqual(tensor_tsv, b'6.0\t6.0')
+    url = '/data/plugin/projector/tensor?run=run1&name=var1'
+    tensor_bytes = self._get(url).read()
+    tensor = np.reshape(np.fromstring(tensor_bytes, dtype='float32'), [1, 2])
+    expected_tensor = np.array([[6, 6]], dtype='float32')
+    self.assertTrue(np.array_equal(tensor, expected_tensor))
 
   def testAcceptGzip_compressesResponse(self):
     response = self._get('/data/graph?run=run1&limit_attr_size=1024'
@@ -418,7 +420,7 @@ class TensorboardServerTest(tf.test.TestCase):
           'var1', [1, 2], initializer=tf.constant_initializer(6.0))
       tf.get_variable('var2', [10, 10])
       tf.get_variable('var3', [100, 100])
-      sess.run(tf.initialize_all_variables())
+      sess.run(tf.global_variables_initializer())
       saver = tf.train.Saver(write_version=tf.train.SaverDef.V1)
       saver.save(sess, checkpoint_path)
 
@@ -468,6 +470,11 @@ class ParseEventFilesSpecTest(tf.test.TestCase):
   def testDoesNotNormalizeGCSPath(self):
     logdir_string = 'gs://foo/./path//..'
     expected = {'gs://foo/./path//..': None}
+    self.assertEqual(server.ParseEventFilesSpec(logdir_string), expected)
+
+  def testRunNameWithGCSPath(self):
+    logdir_string = 'lol:gs://foo/path'
+    expected = {'gs://foo/path': 'lol'}
     self.assertEqual(server.ParseEventFilesSpec(logdir_string), expected)
 
 

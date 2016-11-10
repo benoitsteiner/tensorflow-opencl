@@ -230,8 +230,10 @@ tf_cc_test(
     srcs = ["ops_util_test.cc"],
     deps = [
         ":ops_util",
+        "//tensorflow/core:framework",
         "//tensorflow/core:test",
         "//tensorflow/core:test_main",
+        "//third_party/eigen3",
     ],
 )
 
@@ -1051,8 +1053,8 @@ cc_library(
         "conditional_accumulator_base_op.h",
     ],
     deps = [
+        ":fill_functor",
         ":typed_conditional_accumulator_base",
-        "//tensorflow/core/kernels:fill_functor",
     ],
 )
 
@@ -1081,6 +1083,9 @@ tf_kernel_library(
     name = "resource_variable_ops",
     srcs = ["resource_variable_ops.cc"],
     deps = [
+        ":bounds_check",
+        ":gather_functor",
+        ":scatter_functor",
         ":variable_ops",
         "//tensorflow/core:framework",
         "//tensorflow/core:lib",
@@ -1114,6 +1119,7 @@ tf_kernel_libraries(
     name = "image",
     prefixes = [
         "adjust_contrast_op",
+        "adjust_hue_op",
         "colorspace_op",
         "crop_and_resize_op",
         "decode_jpeg_op",
@@ -2068,6 +2074,7 @@ tf_cc_test(
     srcs = ["sdca_ops_test.cc"],
     linkstatic = tf_kernel_tests_linkstatic(),  # Required for benchmarking
     deps = [
+        ":ops_util",
         "//tensorflow/core:all_kernels",
         "//tensorflow/core:core_cpu",
         "//tensorflow/core:framework",
@@ -2075,7 +2082,6 @@ tf_cc_test(
         "//tensorflow/core:test",
         "//tensorflow/core:test_main",
         "//tensorflow/core:testlib",
-        "//tensorflow/core/kernels:ops_util",
     ],
 )
 
@@ -2137,6 +2143,7 @@ tf_cc_test(
     name = "scatter_nd_op_test",
     size = "small",
     srcs = ["scatter_nd_op_test.cc"],
+    tags = ["noasan"],  # http://b/32635055
     deps = [
         ":ops_testutil",
         ":ops_util",
@@ -2157,14 +2164,17 @@ tf_kernel_libraries(
         "reduce_join_op",
         "string_join_op",
         "string_split_op",
+        "substr_op",
         "as_string_op",
         "base64_ops",
     ],
     deps = [
+        ":bounds_check",
         "//tensorflow/core:framework",
         "//tensorflow/core:lib",
         "//tensorflow/core:lib_internal",
         "//tensorflow/core:string_ops_op_lib",
+        "//third_party/eigen3",
     ],
 )
 
@@ -2398,8 +2408,11 @@ filegroup(
         "conv_2d.h",
         "conv_ops.h",
         "depthwise_conv_op.h",
+        "fake_quant_ops_functor.h",
         "image_resizer_state.h",
         "maxpooling_op.h",
+        "mirror_pad_op.h",
+        "mirror_pad_op_cpu_impl.h",
         "pad_op.h",
         "random_op.h",
         "reduction_ops.h",
@@ -2467,6 +2480,7 @@ filegroup(
         "deep_conv2d.h",
         "depthwise_conv_op.cc",
         "dynamic_partition_op.cc",
+        "fake_quant_ops.cc",
         "fused_batch_norm_op.cc",
         "winograd_transform.h",
         ":android_extended_ops_headers",
@@ -2481,6 +2495,12 @@ filegroup(
         "in_topk_op.cc",
         "lrn_op.cc",
         "maxpooling_op.cc",
+        "mirror_pad_op.cc",
+        "mirror_pad_op_cpu_impl_1.cc",
+        "mirror_pad_op_cpu_impl_2.cc",
+        "mirror_pad_op_cpu_impl_3.cc",
+        "mirror_pad_op_cpu_impl_4.cc",
+        "mirror_pad_op_cpu_impl_5.cc",
         "pad_op.cc",
         "random_op.cc",
         "reduction_ops_common.cc",
@@ -2652,17 +2672,17 @@ tf_kernel_library(
         "reference_gemm.h",
     ],
     deps = [
+        ":concat_lib_hdrs",
+        ":conv_ops",
+        ":eigen_helpers",
+        ":ops_util",
+        ":pooling_ops",
         "//tensorflow/core",
         "//tensorflow/core:array_ops_op_lib",
         "//tensorflow/core:framework",
         "//tensorflow/core:lib",
         "//tensorflow/core:math_ops_op_lib",
         "//tensorflow/core:nn_ops_op_lib",
-        "//tensorflow/core/kernels:concat_lib_hdrs",
-        "//tensorflow/core/kernels:conv_ops",
-        "//tensorflow/core/kernels:eigen_helpers",
-        "//tensorflow/core/kernels:ops_util",
-        "//tensorflow/core/kernels:pooling_ops",
         "//third_party/eigen3",
         "@gemmlowp//:gemmlowp",
     ],
@@ -2673,14 +2693,14 @@ tf_cc_test(
     size = "small",
     srcs = ["requantization_range_op_test.cc"],
     deps = [
+        ":ops_testutil",
+        ":ops_util",
         ":quantized_ops",
         "//tensorflow/core:framework",
         "//tensorflow/core:protos_all_cc",
         "//tensorflow/core:test",
         "//tensorflow/core:test_main",
         "//tensorflow/core:testlib",
-        "//tensorflow/core/kernels:ops_testutil",
-        "//tensorflow/core/kernels:ops_util",
     ],
 )
 
@@ -2689,14 +2709,14 @@ tf_cc_test(
     size = "small",
     srcs = ["quantize_down_and_shrink_range_op_test.cc"],
     deps = [
+        ":ops_testutil",
+        ":ops_util",
         ":quantized_ops",
         "//tensorflow/core:framework",
         "//tensorflow/core:protos_all_cc",
         "//tensorflow/core:test",
         "//tensorflow/core:test_main",
         "//tensorflow/core:testlib",
-        "//tensorflow/core/kernels:ops_testutil",
-        "//tensorflow/core/kernels:ops_util",
     ],
 )
 
@@ -2705,14 +2725,14 @@ tf_cc_test(
     size = "small",
     srcs = ["requantize_op_test.cc"],
     deps = [
+        ":ops_testutil",
+        ":ops_util",
         ":quantized_ops",
         "//tensorflow/core:framework",
         "//tensorflow/core:protos_all_cc",
         "//tensorflow/core:test",
         "//tensorflow/core:test_main",
         "//tensorflow/core:testlib",
-        "//tensorflow/core/kernels:ops_testutil",
-        "//tensorflow/core/kernels:ops_util",
     ],
 )
 
@@ -2740,6 +2760,8 @@ tf_cc_test(
     name = "quantized_activation_ops_test",
     srcs = ["quantized_activation_ops_test.cc"],
     deps = [
+        ":ops_testutil",
+        ":ops_util",
         ":quantized_ops",
         "//tensorflow/core:array_ops_op_lib",
         "//tensorflow/core:framework",
@@ -2749,8 +2771,6 @@ tf_cc_test(
         "//tensorflow/core:test",
         "//tensorflow/core:test_main",
         "//tensorflow/core:testlib",
-        "//tensorflow/core/kernels:ops_testutil",
-        "//tensorflow/core/kernels:ops_util",
     ],
 )
 
@@ -2759,6 +2779,8 @@ tf_cc_test(
     size = "small",
     srcs = ["quantized_bias_add_op_test.cc"],
     deps = [
+        ":ops_testutil",
+        ":ops_util",
         ":quantized_ops",
         "//tensorflow/core:array_ops_op_lib",
         "//tensorflow/core:framework",
@@ -2768,8 +2790,6 @@ tf_cc_test(
         "//tensorflow/core:test",
         "//tensorflow/core:test_main",
         "//tensorflow/core:testlib",
-        "//tensorflow/core/kernels:ops_testutil",
-        "//tensorflow/core/kernels:ops_util",
     ],
 )
 
@@ -2779,6 +2799,8 @@ tf_cc_test(
     srcs = ["quantized_conv_ops_test.cc"],
     tags = ["nomsan"],  # http://b/32242946
     deps = [
+        ":ops_testutil",
+        ":ops_util",
         ":quantized_ops",
         "//tensorflow/core:array_ops_op_lib",
         "//tensorflow/core:framework",
@@ -2788,8 +2810,6 @@ tf_cc_test(
         "//tensorflow/core:test",
         "//tensorflow/core:test_main",
         "//tensorflow/core:testlib",
-        "//tensorflow/core/kernels:ops_testutil",
-        "//tensorflow/core/kernels:ops_util",
     ],
 )
 
@@ -2798,6 +2818,8 @@ tf_cc_test(
     size = "small",
     srcs = ["quantize_op_test.cc"],
     deps = [
+        ":ops_testutil",
+        ":ops_util",
         ":quantized_ops",
         "//tensorflow/core:array_ops_op_lib",
         "//tensorflow/core:framework",
@@ -2807,8 +2829,6 @@ tf_cc_test(
         "//tensorflow/core:test",
         "//tensorflow/core:test_main",
         "//tensorflow/core:testlib",
-        "//tensorflow/core/kernels:ops_testutil",
-        "//tensorflow/core/kernels:ops_util",
     ],
 )
 
@@ -2818,6 +2838,8 @@ tf_cc_test(
     srcs = ["quantized_matmul_op_test.cc"],
     tags = ["nomsan"],  # http://b/32242946
     deps = [
+        ":ops_testutil",
+        ":ops_util",
         ":quantized_ops",
         "//tensorflow/core:array_ops_op_lib",
         "//tensorflow/core:framework",
@@ -2827,8 +2849,6 @@ tf_cc_test(
         "//tensorflow/core:test",
         "//tensorflow/core:test_main",
         "//tensorflow/core:testlib",
-        "//tensorflow/core/kernels:ops_testutil",
-        "//tensorflow/core/kernels:ops_util",
     ],
 )
 
@@ -2837,6 +2857,8 @@ tf_cc_test(
     size = "small",
     srcs = ["quantized_pooling_ops_test.cc"],
     deps = [
+        ":ops_testutil",
+        ":ops_util",
         ":quantized_ops",
         "//tensorflow/core:array_ops_op_lib",
         "//tensorflow/core:framework",
@@ -2846,8 +2868,6 @@ tf_cc_test(
         "//tensorflow/core:test",
         "//tensorflow/core:test_main",
         "//tensorflow/core:testlib",
-        "//tensorflow/core/kernels:ops_testutil",
-        "//tensorflow/core/kernels:ops_util",
     ],
 )
 
@@ -2856,6 +2876,8 @@ tf_cc_test(
     size = "small",
     srcs = ["quantized_reshape_op_test.cc"],
     deps = [
+        ":ops_testutil",
+        ":ops_util",
         ":quantized_ops",
         "//tensorflow/core:framework",
         "//tensorflow/core:lib",
@@ -2863,8 +2885,6 @@ tf_cc_test(
         "//tensorflow/core:test",
         "//tensorflow/core:test_main",
         "//tensorflow/core:testlib",
-        "//tensorflow/core/kernels:ops_testutil",
-        "//tensorflow/core/kernels:ops_util",
     ],
 )
 
@@ -2873,6 +2893,8 @@ tf_cc_test(
     size = "small",
     srcs = ["quantized_concat_op_test.cc"],
     deps = [
+        ":ops_testutil",
+        ":ops_util",
         ":quantized_ops",
         "//tensorflow/core:array_ops_op_lib",
         "//tensorflow/core:core_cpu",
@@ -2884,8 +2906,6 @@ tf_cc_test(
         "//tensorflow/core:test",
         "//tensorflow/core:test_main",
         "//tensorflow/core:testlib",
-        "//tensorflow/core/kernels:ops_testutil",
-        "//tensorflow/core/kernels:ops_util",
     ],
 )
 
@@ -2894,6 +2914,8 @@ tf_cc_test(
     size = "small",
     srcs = ["quantized_batch_norm_op_test.cc"],
     deps = [
+        ":batch_norm_op",
+        ":ops_testutil",
         ":quantized_ops",
         "//tensorflow/core:array_ops_op_lib",
         "//tensorflow/core:core_cpu_internal",
@@ -2905,8 +2927,6 @@ tf_cc_test(
         "//tensorflow/core:test",
         "//tensorflow/core:test_main",
         "//tensorflow/core:testlib",
-        "//tensorflow/core/kernels:batch_norm_op",
-        "//tensorflow/core/kernels:ops_testutil",
         "//third_party/eigen3",
     ],
 )

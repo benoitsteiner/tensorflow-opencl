@@ -113,14 +113,14 @@ class REINFORCESimpleExample(tf.test.TestCase):
 
     with self.test_session() as sess:
       # Use sampling to train REINFORCE
-      with st.value_type(st.SampleAndReshapeValue(n=1)):
+      with st.value_type(st.SampleValue()):
         (route_selection,
          routing_loss,
          final_loss) = build_split_apply_merge_model()
 
       sgd = tf.train.GradientDescentOptimizer(1.0).minimize(final_loss)
 
-      tf.initialize_all_variables().run()
+      tf.global_variables_initializer().run()
 
       for i in range(10):
         # Run loss and inference step.  This toy problem converges VERY quickly.

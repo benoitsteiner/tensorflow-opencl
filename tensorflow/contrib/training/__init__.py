@@ -67,6 +67,7 @@ from __future__ import print_function
 
 # pylint: disable=unused-import,wildcard-import
 from tensorflow.contrib.training.python.training.bucket_ops import *
+from tensorflow.contrib.training.python.training.device_setter import *
 from tensorflow.contrib.training.python.training.resample import *
 from tensorflow.contrib.training.python.training.sampling_ops import *
 from tensorflow.contrib.training.python.training.sequence_queueing_state_saver import *
@@ -76,5 +77,6 @@ from tensorflow.contrib.training.python.training.training import create_train_op
 from tensorflow.contrib.training.python.training.training import multiply_gradients
 from tensorflow.contrib.training.python.training.training import train
 from tensorflow.python.util.all_util import make_all
+# pylint: enable=unused-import,wildcard-import
 
 __all__ = make_all(__name__)

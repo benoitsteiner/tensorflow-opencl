@@ -677,7 +677,7 @@ class VariableScopeWithPartitioningTest(tf.test.TestCase):
       self.assertEqual(v.name, "scope0/name0")
       v_concat = v.as_tensor()
       self.assertEqual(v_concat.name, "scope0/name0:0")
-      variables = tf.get_collection(tf.GraphKeys.VARIABLES)
+      variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
       self.assertTrue("scope0/name0/part_0:0" in [x.name for x in variables])
       self.assertTrue("scope0/name0/part_1:0" in [x.name for x in variables])
       self.assertFalse("scope0/name0/part_2:0" in [x.name for x in variables])
@@ -793,7 +793,7 @@ class VariableScopeWithCustomGetterTest(tf.test.TestCase):
     self.assertEqual("scope/v/1:0", true_vars[1].name)
     self.assertEqual("custom_getter/add:0", v.name)
     with self.test_session() as sess:
-      tf.initialize_all_variables().run()
+      tf.global_variables_initializer().run()
       np_vars, np_v = sess.run([true_vars, v])
       self.assertAllClose(np_v, sum(np_vars))
 
