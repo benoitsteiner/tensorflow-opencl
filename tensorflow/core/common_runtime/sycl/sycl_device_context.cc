@@ -22,34 +22,39 @@ limitations under the License.
 
 namespace tensorflow {
 
-void SYCLDeviceContext::CopyCPUTensorToDevice(const Tensor* cpu_tensor,
-                                              Device* device,
-                                              Tensor* device_tensor,
+void SYCLDeviceContext::CopyCPUTensorToDevice(const Tensor *cpu_tensor,
+                                              Device *device,
+                                              Tensor *device_tensor,
                                               StatusCallback done) const {
   const int64 total_bytes = cpu_tensor->TotalBytes();
   if (total_bytes > 0) {
-    const void* src_ptr = DMAHelper::base(cpu_tensor);
-    void* dst_ptr = DMAHelper::base(device_tensor);
+    const void *src_ptr = DMAHelper::base(cpu_tensor);
+    void *dst_ptr = DMAHelper::base(device_tensor);
     switch (cpu_tensor->dtype()) {
     case DT_FLOAT:
-      device->eigen_sycl_device()->memcpyHostToDevice(static_cast<float*>(dst_ptr),
-          static_cast<const float*>(src_ptr), total_bytes);
+      device->eigen_sycl_device()->memcpyHostToDevice(
+          static_cast<float *>(dst_ptr), static_cast<const float *>(src_ptr),
+          total_bytes);
       break;
     case DT_DOUBLE:
-      device->eigen_sycl_device()->memcpyHostToDevice(static_cast<double*>(dst_ptr),
-          static_cast<const double*>(src_ptr), total_bytes);
+      device->eigen_sycl_device()->memcpyHostToDevice(
+          static_cast<double *>(dst_ptr), static_cast<const double *>(src_ptr),
+          total_bytes);
       break;
     case DT_INT32:
-      device->eigen_sycl_device()->memcpyHostToDevice(static_cast<int32*>(dst_ptr),
-          static_cast<const int32*>(src_ptr), total_bytes);
+      device->eigen_sycl_device()->memcpyHostToDevice(
+          static_cast<int32 *>(dst_ptr), static_cast<const int32 *>(src_ptr),
+          total_bytes);
       break;
     case DT_INT64:
-      device->eigen_sycl_device()->memcpyHostToDevice(static_cast<int64*>(dst_ptr),
-          static_cast<const int64*>(src_ptr), total_bytes);
+      device->eigen_sycl_device()->memcpyHostToDevice(
+          static_cast<int64 *>(dst_ptr), static_cast<const int64 *>(src_ptr),
+          total_bytes);
       break;
     case DT_HALF:
-      device->eigen_sycl_device()->memcpyHostToDevice(static_cast<Eigen::half*>(dst_ptr),
-          static_cast<const Eigen::half*>(src_ptr), total_bytes);
+      device->eigen_sycl_device()->memcpyHostToDevice(
+          static_cast<Eigen::half *>(dst_ptr),
+          static_cast<const Eigen::half *>(src_ptr), total_bytes);
       break;
     default:
       assert(false && "unsupported type");
@@ -58,35 +63,40 @@ void SYCLDeviceContext::CopyCPUTensorToDevice(const Tensor* cpu_tensor,
   done(Status::OK());
 }
 
-void SYCLDeviceContext::CopyDeviceTensorToCPU(const Tensor* device_tensor,
+void SYCLDeviceContext::CopyDeviceTensorToCPU(const Tensor *device_tensor,
                                               StringPiece edge_name,
-                                              Device* device,
-                                              Tensor* cpu_tensor,
+                                              Device *device,
+                                              Tensor *cpu_tensor,
                                               StatusCallback done) {
   const int64 total_bytes = device_tensor->TotalBytes();
   if (total_bytes > 0) {
-    const void* src_ptr = DMAHelper::base(device_tensor);
-    void* dst_ptr = DMAHelper::base(cpu_tensor);
+    const void *src_ptr = DMAHelper::base(device_tensor);
+    void *dst_ptr = DMAHelper::base(cpu_tensor);
     switch (device_tensor->dtype()) {
     case DT_FLOAT:
-      device->eigen_sycl_device()->memcpyDeviceToHost(static_cast<float*>(dst_ptr),
-         static_cast<const float*>(src_ptr), total_bytes);
+      device->eigen_sycl_device()->memcpyDeviceToHost(
+          static_cast<float *>(dst_ptr), static_cast<const float *>(src_ptr),
+          total_bytes);
       break;
     case DT_DOUBLE:
-      device->eigen_sycl_device()->memcpyDeviceToHost(static_cast<double*>(dst_ptr),
-         static_cast<const double*>(src_ptr), total_bytes);
+      device->eigen_sycl_device()->memcpyDeviceToHost(
+          static_cast<double *>(dst_ptr), static_cast<const double *>(src_ptr),
+          total_bytes);
       break;
     case DT_INT32:
-      device->eigen_sycl_device()->memcpyDeviceToHost(static_cast<int32*>(dst_ptr),
-         static_cast<const int32*>(src_ptr), total_bytes);
+      device->eigen_sycl_device()->memcpyDeviceToHost(
+          static_cast<int32 *>(dst_ptr), static_cast<const int32 *>(src_ptr),
+          total_bytes);
       break;
     case DT_INT64:
-      device->eigen_sycl_device()->memcpyDeviceToHost(static_cast<int64*>(dst_ptr),
-         static_cast<const int64*>(src_ptr), total_bytes);
+      device->eigen_sycl_device()->memcpyDeviceToHost(
+          static_cast<int64 *>(dst_ptr), static_cast<const int64 *>(src_ptr),
+          total_bytes);
       break;
     case DT_HALF:
-      device->eigen_sycl_device()->memcpyDeviceToHost(static_cast<Eigen::half*>(dst_ptr),
-         static_cast<const Eigen::half*>(src_ptr), total_bytes);
+      device->eigen_sycl_device()->memcpyDeviceToHost(
+          static_cast<Eigen::half *>(dst_ptr),
+          static_cast<const Eigen::half *>(src_ptr), total_bytes);
       break;
     default:
       assert(false && "unsupported type");
@@ -95,6 +105,6 @@ void SYCLDeviceContext::CopyDeviceTensorToCPU(const Tensor* device_tensor,
   done(Status::OK());
 }
 
-}  // namespace tensorflow
+} // namespace tensorflow
 
 #endif // TENSORFLOW_USE_SYCL
