@@ -19,9 +19,6 @@ limitations under the License.
 
 namespace tensorflow {
 
-SYCLAllocator::SYCLAllocator()
-    : device_(new Eigen::SyclDevice(cl::sycl::gpu_selector())) {}
-
 SYCLAllocator::~SYCLAllocator() { delete device_; }
 
 string SYCLAllocator::Name() { return "device:SYCL"; }

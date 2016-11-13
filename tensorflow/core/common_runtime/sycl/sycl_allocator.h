@@ -20,16 +20,19 @@ limitations under the License.
 #ifndef TENSORFLOW_COMMON_RUNTIME_SYCL_SYCL_ALLOCATOR_H_
 #define TENSORFLOW_COMMON_RUNTIME_SYCL_SYCL_ALLOCATOR_H_
 
-#include "tensorflow/core/framework/allocator.h"
-#include "tensorflow/core/platform/types.h"
 #define EIGEN_USE_SYCL
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
+
+#include "tensorflow/core/framework/allocator.h"
+#include "tensorflow/core/platform/types.h"
 
 namespace tensorflow {
 
 class SYCLAllocator : public Allocator {
 public:
-  SYCLAllocator();
+  template<typename T>
+  SYCLAllocator(T selector)
+      : device_(new Eigen::SyclDevice(selector)) {}
 
   virtual ~SYCLAllocator() override;
   string Name() override;
