@@ -47,7 +47,10 @@ load(
     "@local_config_cuda//cuda:build_defs.bzl",
     "if_cuda",
 )
-
+load(
+    "@local_config_sycl//sycl:build_defs.bzl",
+    "if_sycl",
+)
 # List of proto files for android builds
 def tf_android_core_proto_sources():
   return ["//tensorflow/core:" + p
@@ -146,7 +149,7 @@ def if_not_windows(a):
   return select({
       "//tensorflow:windows": [],
       "//conditions:default": a,
-  })  
+  })
 
 def tf_copts():
   return (["-DEIGEN_AVOID_STL_ARRAY",
@@ -539,7 +542,7 @@ def tf_kernel_library(name, prefix=None, srcs=None, gpu_srcs=None, hdrs=None,
       name = name,
       srcs = srcs,
       hdrs = hdrs,
-      copts = tf_copts(),
+      copts = tf_copts() + if_sycl(["-DTENSORFLOW_USE_SYCL=1", "-x", "sycl"]),
       cuda_deps = cuda_deps,
       linkstatic = 1,   # Needed since alwayslink is broken in bazel b/27630669
       alwayslink = alwayslink,

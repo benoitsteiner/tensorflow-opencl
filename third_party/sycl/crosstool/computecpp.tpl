@@ -16,8 +16,10 @@ COMPUTECPP_DRIVER= COMPUTECPP_ROOT+"bin/compute++"
 COMPUTECPP_INCLUDE = COMPUTECPP_ROOT+"include"
 
 def main():
-  computecpp_compiler_flags = [""]
-  computecpp_compiler_flags = [flag for flag in sys.argv[1:]]
+  parser = ArgumentParser()
+  parser.add_argument('-x', nargs=1)
+  args, leftover = parser.parse_known_args(sys.argv[1:])
+  computecpp_compiler_flags = [flag for flag in leftover]
   computecpp_compiler_flags = computecpp_compiler_flags + ["-D_GLIBCXX_USE_CXX11_ABI=0"]
 
   output_file_index = computecpp_compiler_flags.index("-o") +1
@@ -36,26 +38,29 @@ def main():
           compiling_cpp = 1;
 
   if(compiling_cpp == 1):
-      filename, file_extension = os.path.splitext(output_file_name)
-      bc_out = filename + ".sycl"
+      if args.x and args.x[0] == 'sycl':
+        filename, file_extension = os.path.splitext(output_file_name)
+        bc_out = filename + ".sycl"
 
-      computecpp_compiler_flags = ['-sycl-compress-name', '-DTENSORFLOW_USE_SYCL', '-Wno-unused-variable','-I', COMPUTECPP_INCLUDE,'-isystem',
-      COMPUTECPP_INCLUDE, "-std=c++11", "-sycl", "-emit-llvm", "-no-serial-memop"] + computecpp_compiler_flags
+        computecpp_compiler_flags = ['-sycl-compress-name', '-DTENSORFLOW_USE_SYCL', '-Wno-unused-variable', '-I', COMPUTECPP_INCLUDE, '-isystem',
+        COMPUTECPP_INCLUDE, "-std=c++11", "-sycl", "-emit-llvm", "-no-serial-memop"] + computecpp_compiler_flags
 
-      # dont want that in case of compiling with computecpp first
-      host_compiler_flags = [""]
-      host_compiler_flags = [flag for flag in sys.argv[1:]
-                                if not flag.startswith(('-MF','-MD',))
-                                if not ".d" in flag]
+        # dont want that in case of compiling with computecpp first
+        host_compiler_flags = [flag for flag in leftover
+                                  if not flag.startswith(('-MF','-MD',))
+                                  if not ".d" in flag]
 
-      x = subprocess.call([COMPUTECPP_DRIVER] +computecpp_compiler_flags )
-      if(x == 0):
-          host_compiler_flags = ['-D_GLIBCXX_USE_CXX11_ABI=0', '-DTENSORFLOW_USE_SYCL', '-Wno-unused-variable', '-I', COMPUTECPP_INCLUDE, "--include",bc_out] + host_compiler_flags
-          return subprocess.call([CPU_CXX_COMPILER] +host_compiler_flags )
-      return x
+        x = subprocess.call([COMPUTECPP_DRIVER] +computecpp_compiler_flags )
+        if(x == 0):
+            host_compiler_flags = ['-D_GLIBCXX_USE_CXX11_ABI=0', '-DTENSORFLOW_USE_SYCL', '-Wno-unused-variable', '-I', COMPUTECPP_INCLUDE, "--include", bc_out] + host_compiler_flags
+            return subprocess.call([CPU_CXX_COMPILER] +host_compiler_flags)
+        return x
+      else:
+        computecpp_compiler_flags = ['-D_GLIBCXX_USE_CXX11_ABI=0', '-DTENSORFLOW_USE_SYCL', '-Wno-unused-variable', '-I', COMPUTECPP_INCLUDE] + computecpp_compiler_flags
+        return subprocess.call([CPU_CXX_COMPILER] +computecpp_compiler_flags)
   else:
     # compile for C
-    return subprocess.call([CPU_C_COMPILER] +computecpp_compiler_flags)
+    return subprocess.call([CPU_C_COMPILER] + computecpp_compiler_flags)
 
 if __name__ == '__main__':
   sys.exit(main())
