@@ -157,6 +157,7 @@ def tf_copts():
            "-Wno-sign-compare",
            "-fno-exceptions"] +
           if_cuda(["-DGOOGLE_CUDA=1"]) +
+          if_sycl(["-DTENSORFLOW_USE_SYCL=1", "-x", "sycl"]) +
           if_android_arm(["-mfpu=neon"]) +
           select({
               "//tensorflow:android": [
@@ -542,7 +543,7 @@ def tf_kernel_library(name, prefix=None, srcs=None, gpu_srcs=None, hdrs=None,
       name = name,
       srcs = srcs,
       hdrs = hdrs,
-      copts = tf_copts() + if_sycl(["-DTENSORFLOW_USE_SYCL=1", "-x", "sycl"]),
+      copts = tf_copts(),
       cuda_deps = cuda_deps,
       linkstatic = 1,   # Needed since alwayslink is broken in bazel b/27630669
       alwayslink = alwayslink,
