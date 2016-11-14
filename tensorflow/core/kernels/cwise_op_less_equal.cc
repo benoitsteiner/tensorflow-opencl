@@ -18,6 +18,16 @@ limitations under the License.
 namespace tensorflow {
 REGISTER8(BinaryOp, CPU, "LessEqual", functor::less_equal, float, Eigen::half,
           double, int32, int64, uint8, int8, int16);
+#if TENSORFLOW_USE_SYCL
+#define REGISTER_SYCL_KERNEL(TYPE)                                    \
+  REGISTER_KERNEL_BUILDER(                                            \
+                          Name("LessEqual")                           \
+                          .Device(DEVICE_SYCL)                        \
+                          .TypeConstraint<TYPE>("T"),                 \
+                          BinaryOp<SYCLDevice, functor::less_equal<TYPE>>);
+TF_CALL_REAL_NUMBER_TYPES(REGISTER_SYCL_KERNEL);
+#undef REGISTER_SYCL_KERNEL
+#endif // TENSORFLOW_USE_SYCL
 #if GOOGLE_CUDA
 REGISTER7(BinaryOp, GPU, "LessEqual", functor::less_equal, float, Eigen::half,
           double, int64, uint8, int8, int16);

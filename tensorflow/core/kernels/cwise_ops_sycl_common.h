@@ -22,6 +22,7 @@ limitations under the License.
 
 #define EIGEN_USE_SYCL
 
+#include <SYCL/sycl.hpp>
 #include "tensorflow/core/framework/register_types.h"
 
 #include "tensorflow/core/framework/tensor_types.h"
@@ -33,6 +34,181 @@ namespace tensorflow {
 namespace functor {
 
 typedef Eigen::SyclDevice SYCLDevice;
+
+// SYCL specific math functors
+// Will be removed once implemented in Eigen
+
+// acos
+template<typename Scalar> struct scalar_acos_op_sycl {
+  EIGEN_EMPTY_STRUCT_CTOR(scalar_acos_op_sycl)
+  inline const Scalar operator() (const Scalar& a) const { return cl::sycl::acos(a); }
+};
+
+template <typename T>
+struct acos_sycl : base<T, scalar_acos_op_sycl<T> > {};
+
+// asin
+template<typename Scalar> struct scalar_asin_op_sycl {
+  EIGEN_EMPTY_STRUCT_CTOR(scalar_asin_op_sycl)
+  inline const Scalar operator() (const Scalar& a) const { return cl::sycl::asin(a); }
+};
+
+template <typename T>
+struct asin_sycl : base<T, scalar_asin_op_sycl<T> > {};
+
+// atan
+template<typename Scalar> struct scalar_atan_op_sycl {
+  EIGEN_EMPTY_STRUCT_CTOR(scalar_atan_op_sycl)
+  inline const Scalar operator() (const Scalar& a) const { return cl::sycl::atan(a); }
+};
+
+template <typename T>
+struct atan_sycl : base<T, scalar_atan_op_sycl<T> > {};
+
+// ceil
+template<typename Scalar> struct scalar_ceil_op_sycl {
+  EIGEN_EMPTY_STRUCT_CTOR(scalar_ceil_op_sycl)
+  inline const Scalar operator() (const Scalar& a) const { return cl::sycl::ceil(a); }
+};
+
+template <typename T>
+struct ceil_sycl : base<T, scalar_ceil_op_sycl<T> > {};
+
+// cos
+template<typename Scalar> struct scalar_cos_op_sycl {
+  EIGEN_EMPTY_STRUCT_CTOR(scalar_cos_op_sycl)
+  inline const Scalar operator() (const Scalar& a) const { return cl::sycl::cos(a); }
+};
+
+template <typename T>
+struct cos_sycl : base<T, scalar_cos_op_sycl<T> > {};
+
+// exp
+template<typename Scalar> struct scalar_exp_op_sycl {
+  EIGEN_EMPTY_STRUCT_CTOR(scalar_exp_op_sycl)
+  inline const Scalar operator() (const Scalar& a) const { return cl::sycl::exp(a); }
+};
+
+template <typename T>
+struct exp_sycl : base<T, scalar_exp_op_sycl<T> > {};
+
+// floor
+template<typename Scalar> struct scalar_floor_op_sycl {
+  EIGEN_EMPTY_STRUCT_CTOR(scalar_floor_op_sycl)
+  inline const Scalar operator() (const Scalar& a) const { return cl::sycl::floor(a); }
+};
+
+template <typename T>
+struct floor_sycl : base<T, scalar_floor_op_sycl<T> > {};
+
+// log
+template<typename Scalar> struct scalar_log_op_sycl {
+  EIGEN_EMPTY_STRUCT_CTOR(scalar_log_op_sycl)
+  inline const Scalar operator() (const Scalar& a) const { return cl::sycl::log(a); }
+};
+
+template <typename T>
+struct log_sycl : base<T, scalar_log_op_sycl<T> > {};
+
+// log
+template<typename Scalar> struct scalar_log1p_op_sycl {
+  EIGEN_EMPTY_STRUCT_CTOR(scalar_log1p_op_sycl)
+  inline const Scalar operator() (const Scalar& a) const { return cl::sycl::log1p(a); }
+};
+
+template <typename T>
+struct log1p_sycl : base<T, scalar_log1p_op_sycl<T> > {};
+
+// sin
+template<typename Scalar> struct scalar_sin_op_sycl {
+  EIGEN_EMPTY_STRUCT_CTOR(scalar_sin_op_sycl)
+  inline const Scalar operator() (const Scalar& a) const { return cl::sycl::sin(a); }
+};
+
+template <typename T>
+struct sin_sycl : base<T, scalar_sin_op_sycl<T> > {};
+
+// sqrt
+template<typename Scalar> struct scalar_sqrt_op_sycl {
+  EIGEN_EMPTY_STRUCT_CTOR(scalar_sqrt_op_sycl)
+  inline const Scalar operator() (const Scalar& a) const { return cl::sycl::sqrt(a); }
+};
+
+template <typename T>
+struct sqrt_sycl : base<T, scalar_sqrt_op_sycl<T> > {};
+
+// isinf
+template<typename Scalar> struct scalar_isinf_op_sycl {
+  EIGEN_EMPTY_STRUCT_CTOR(scalar_isinf_op_sycl)
+  inline const bool operator() (const Scalar& a) const { return static_cast<bool>(cl::sycl::isinf(a)); }
+};
+
+template <typename T>
+struct isinf_sycl : base<T, scalar_isinf_op_sycl<T>, bool> {};
+
+// isnan
+struct scalar_isnan_op_sycl {
+  EIGEN_EMPTY_STRUCT_CTOR(scalar_isnan_op_sycl)
+  template<typename Scalar>
+  inline const bool operator() (const Scalar& a) const {
+#if __SYCL_DEVICE_ONLY__
+    return static_cast<bool>(cl::sycl::isnan(a));
+#else
+    return (Eigen::numext::isnan)(a);
+#endif
+  }
+};
+
+template <typename T>
+struct isnan_sycl : base<T, scalar_isnan_op_sycl, bool> {};
+
+// isfinite
+template<typename Scalar> struct scalar_isfinite_op_sycl {
+  EIGEN_EMPTY_STRUCT_CTOR(scalar_isfinite_op_sycl)
+  inline const bool operator() (const Scalar& a) const { return static_cast<bool>(cl::sycl::isfinite(a)); }
+};
+
+template <typename T>
+struct isfinite_sycl : base<T, scalar_isfinite_op_sycl<T>, bool> {};
+
+// pow
+template <typename Scalar, typename Exponent>
+struct scalar_pow_op_sycl {
+  EIGEN_EMPTY_STRUCT_CTOR(scalar_pow_op_sycl)
+  inline Scalar operator()(const Scalar& a, const Exponent& b) const {
+  return cl::sycl::pow(a, b);
+  }
+};
+
+template <typename T>
+struct pow_sycl : base<T, scalar_pow_op_sycl<T, T> > {};
+
+//rsqrt
+template<typename Scalar> struct scalar_rsqrt_op_sycl {
+  EIGEN_EMPTY_STRUCT_CTOR(scalar_rsqrt_op_sycl)
+  inline const Scalar operator() (const Scalar& a) const { return cl::sycl::rsqrt(a); }
+};
+
+template <typename T>
+struct rsqrt_sycl : base<T, scalar_rsqrt_op_sycl<T> > {};
+
+// tan
+template<typename Scalar> struct scalar_tan_op_sycl {
+  EIGEN_EMPTY_STRUCT_CTOR(scalar_tan_op_sycl)
+  inline const Scalar operator() (const Scalar& a) const { return cl::sycl::tan(a); }
+};
+
+template <typename T>
+struct tan_sycl : base<T, scalar_tan_op_sycl<T> > {};
+
+// tanh
+template<typename Scalar> struct scalar_tanh_op_sycl {
+  EIGEN_EMPTY_STRUCT_CTOR(scalar_tanh_op_sycl)
+  inline const Scalar operator() (const Scalar& a) const { return cl::sycl::tanh(a); }
+};
+
+template <typename T>
+struct tanh_sycl : base<T, scalar_tanh_op_sycl<T> > {};
 
 template <typename Index, int N> Eigen::array<Index, N> GenerateArrayOfOnes() {
   Eigen::array<Index, N> result;

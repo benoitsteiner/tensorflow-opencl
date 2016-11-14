@@ -21,6 +21,14 @@ REGISTER2(BinaryOp, CPU, "Mod", functor::fmod, float, double);
 REGISTER2(BinaryOp, CPU, "TruncateMod", functor::safe_mod, int32, int64);
 REGISTER2(BinaryOp, CPU, "TruncateMod", functor::fmod, float, double);
 
+#if TENSORFLOW_USE_SYCL
+#define REGISTER_SYCL_KERNEL(TYPE)                                             \
+  REGISTER_KERNEL_BUILDER(                                                     \
+      Name("Mod").Device(DEVICE_SYCL).TypeConstraint<TYPE>("T"),               \
+      BinaryOp<SYCLDevice, functor::fmod<TYPE>>);
+REGISTER_SYCL_KERNEL(float);
+#undef REGISTER_SYCL_KERNEL
+#endif // TENSORFLOW_USE_SYCL
 #if GOOGLE_CUDA
 // A special GPU kernel for int32.
 // TODO(b/25387198): Also enable int32 in device memory. This kernel

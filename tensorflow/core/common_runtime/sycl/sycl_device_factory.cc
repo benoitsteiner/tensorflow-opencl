@@ -30,10 +30,10 @@ public:
     }
     for (int i = 0; i < n; i++) {
       string name = strings::StrCat(name_prefix, "/device:SYCL:", i);
-      devices->push_back(new SYCLDevice(options, name, Bytes(256 << 20),
-                                        DeviceLocality(),
-                                        SYCLDevice::GetShortDeviceDescription(),
-                                        new SYCLAllocator(), cpu_allocator()));
+      devices->push_back(new SYCLDevice(
+        options, name, Bytes(256 << 20), DeviceLocality(),
+        SYCLDevice::GetShortDeviceDescription(),
+        cl::sycl::gpu_selector(), cpu_allocator()));
     }
     return Status::OK();
   }

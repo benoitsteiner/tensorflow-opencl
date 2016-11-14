@@ -31,10 +31,18 @@ limitations under the License.
 namespace tensorflow {
 class SYCLDevice : public LocalDevice {
 public:
+  template <typename SYCLSelector>
   SYCLDevice(const SessionOptions &options, const string &name,
              Bytes memory_limit, const DeviceLocality &locality,
-             const string &physical_device_desc, SYCLAllocator *sycl_allocator,
-             Allocator *cpu_allocator);
+             const string &physical_device_desc, SYCLSelector sycl_selector,
+             Allocator *cpu_allocator)
+      : LocalDevice(options, Device::BuildDeviceAttributes(
+                                 name, DEVICE_SYCL, memory_limit, locality,
+                                 physical_device_desc), nullptr),
+        cpu_allocator_(cpu_allocator),
+        sycl_device_(new Eigen::SyclDevice(sycl_selector)),
+        sycl_allocator_(new SYCLAllocator(sycl_device_)),
+        device_context_(new SYCLDeviceContext()) { }
   ~SYCLDevice() override;
 
   void Compute(OpKernel *op_kernel, OpKernelContext *context) override;
@@ -51,10 +59,11 @@ public:
                                           const DeviceDescription& desc*/) {
     return strings::StrCat("device: 0, name SYCL, pci bus id: 0");
   }
-
+  const Eigen::SyclDevice * eigen_sycl_device() const override { return sycl_device_; }
 private:
-  Allocator *cpu_allocator_;      // owned
-  SYCLAllocator *sycl_allocator_; // owned
+  Allocator *cpu_allocator_;        // not owned
+  Eigen::SyclDevice* sycl_device_;  // owned
+  SYCLAllocator* sycl_allocator_;   // owned
   SYCLDeviceContext *device_context_;
 };
 
