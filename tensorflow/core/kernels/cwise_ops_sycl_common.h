@@ -36,7 +36,7 @@ namespace functor {
 typedef Eigen::SyclDevice SYCLDevice;
 
 // SYCL specific math functors
-
+// Will be removed once implemented in Eigen
 
 // acos
 template<typename Scalar> struct scalar_acos_op_sycl {
@@ -172,6 +172,26 @@ template<typename Scalar> struct scalar_isfinite_op_sycl {
 template <typename T>
 struct isfinite_sycl : base<T, scalar_isfinite_op_sycl<T>, bool> {};
 
+// pow
+template <typename Scalar, typename Exponent>
+struct scalar_pow_op_sycl {
+  EIGEN_EMPTY_STRUCT_CTOR(scalar_pow_op_sycl)
+  inline Scalar operator()(const Scalar& a, const Exponent& b) const {
+  return cl::sycl::pow(a, b);
+  }
+};
+
+template <typename T>
+struct pow_sycl : base<T, scalar_pow_op_sycl<T, T> > {};
+
+//rsqrt
+template<typename Scalar> struct scalar_rsqrt_op_sycl {
+  EIGEN_EMPTY_STRUCT_CTOR(scalar_rsqrt_op_sycl)
+  inline const Scalar operator() (const Scalar& a) const { return cl::sycl::rsqrt(a); }
+};
+
+template <typename T>
+struct rsqrt_sycl : base<T, scalar_rsqrt_op_sycl<T> > {};
 
 template <typename Index, int N> Eigen::array<Index, N> GenerateArrayOfOnes() {
   Eigen::array<Index, N> result;

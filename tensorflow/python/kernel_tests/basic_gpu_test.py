@@ -48,6 +48,7 @@ class GPUBinaryOpsTest(tf.test.TestCase):
     self._compareGPU(x, y, np.multiply, tf.mul)
     self._compareGPU(x, y + 0.1, np.true_divide, tf.truediv)
     self._compareGPU(x, y + 0.1, np.floor_divide, tf.floordiv)
+    self._compareGPU(x, y, np.power, tf.pow)
 
   def _GetGradientArgs(self, xs, ys):
     with self.test_session(use_gpu=True) as sess:
@@ -67,6 +68,13 @@ class MathBuiltinUnaryTest(tf.test.TestCase):
      ofunc = tf_func(inx)
      tf_out = sess.run(ofunc)
     self.assertAllClose(np_out, tf_out)
+
+  def _inv(self, x):
+    return 1.0 / x
+
+  def _rsqrt(self, x):
+    return self._inv(np.sqrt(x))
+
   def _testDtype(self, dtype, use_gpu):
     data = (np.arange(-3, 3) / 4.).reshape([1, 3, 2]).astype(dtype)
     self._compare(data, np.abs, tf.abs, use_gpu)
@@ -79,6 +87,7 @@ class MathBuiltinUnaryTest(tf.test.TestCase):
     self._compare(data, np.log, tf.log, use_gpu)
     self._compare(data, np.log1p, tf.log1p, use_gpu)
     self._compare(data, np.negative, tf.neg, use_gpu)
+    self._compare(data, self._rsqrt, tf.rsqrt, use_gpu)
     self._compare(data, np.sin, tf.sin, use_gpu)
     self._compare(data, np.sqrt, tf.sqrt, use_gpu)
     self._compare(data, np.square, tf.square, use_gpu)
