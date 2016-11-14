@@ -61,9 +61,9 @@ public:
   }
   const Eigen::SyclDevice * eigen_sycl_device() const override { return sycl_device_; }
 private:
-  Allocator *cpu_allocator_;      // not owned
-  Eigen::SyclDevice* sycl_device_ // owned
-  SYCLAllocator* sycl_allocator_; // owned
+  Allocator *cpu_allocator_;        // not owned
+  Eigen::SyclDevice* sycl_device_;  // owned
+  SYCLAllocator* sycl_allocator_;   // owned
   SYCLDeviceContext *device_context_;
 };
 
