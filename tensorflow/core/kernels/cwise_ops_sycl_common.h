@@ -135,13 +135,9 @@ template<typename Scalar> struct scalar_sin_op_sycl {
 template <typename T>
 struct sin_sycl : base<T, scalar_sin_op_sycl<T> > {};
 
-
 // sqrt
 template <typename T>
 struct sqrt_sycl : base<T, scalar_sqrt_op_sycl<T> > {};
-
-
-
 
 template <typename Index, int N> Eigen::array<Index, N> GenerateArrayOfOnes() {
   Eigen::array<Index, N> result;
