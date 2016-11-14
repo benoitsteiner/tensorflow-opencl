@@ -42,8 +42,8 @@ def main():
         filename, file_extension = os.path.splitext(output_file_name)
         bc_out = filename + ".sycl"
 
-        computecpp_compiler_flags = ['-sycl-compress-name', '-DTENSORFLOW_USE_SYCL', '-Wno-unused-variable', '-I', COMPUTECPP_INCLUDE, '-isystem',
-        COMPUTECPP_INCLUDE, "-std=c++11", "-sycl", "-emit-llvm", "-no-serial-memop"] + computecpp_compiler_flags
+        computecpp_compiler_flags = ['--sycl-no-diags', '-sycl-compress-name', '-DTENSORFLOW_USE_SYCL', '-Wno-unused-variable', '-I', COMPUTECPP_INCLUDE, '-isystem',
+        COMPUTECPP_INCLUDE, '-std=c++11', '-sycl', '-emit-llvm', '-no-serial-memop'] + computecpp_compiler_flags
 
         # dont want that in case of compiling with computecpp first
         host_compiler_flags = [flag for flag in leftover
