@@ -18,6 +18,14 @@ limitations under the License.
 namespace tensorflow {
 REGISTER5(UnaryOp, CPU, "Abs", functor::abs, float, Eigen::half, double, int32,
           int64);
+#if TENSORFLOW_USE_SYCL
+#define REGISTER_SYCL_KERNEL(TYPE)                                             \
+  REGISTER_KERNEL_BUILDER(                                                     \
+      Name("Abs").Device(DEVICE_SYCL).TypeConstraint<TYPE>("T"),               \
+      UnaryOp<SYCLDevice, functor::abs<TYPE>>);
+TF_CALL_GPU_NUMBER_TYPES_NO_HALF(REGISTER_SYCL_KERNEL);
+#undef REGISTER_SYCL_KERNEL
+#endif // TENSORFLOW_USE_SYCL
 #if !defined(IS_MOBILE_PLATFORM)
 REGISTER2(UnaryOp, CPU, "ComplexAbs", functor::abs, complex64, complex128);
 #endif

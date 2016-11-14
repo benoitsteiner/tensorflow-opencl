@@ -22,6 +22,7 @@ limitations under the License.
 
 #define EIGEN_USE_SYCL
 
+#include <SYCL/sycl.hpp>
 #include "tensorflow/core/framework/register_types.h"
 
 #include "tensorflow/core/framework/tensor_types.h"
@@ -33,6 +34,114 @@ namespace tensorflow {
 namespace functor {
 
 typedef Eigen::SyclDevice SYCLDevice;
+
+// SYCL specific math functors
+
+
+// acos
+template<typename Scalar> struct scalar_acos_op_sycl {
+  EIGEN_EMPTY_STRUCT_CTOR(scalar_acos_op_sycl)
+  inline const Scalar operator() (const Scalar& a) const { return cl::sycl::acos(a); }
+};
+
+template <typename T>
+struct acos_sycl : base<T, scalar_acos_op_sycl<T> > {};
+
+// asin
+template<typename Scalar> struct scalar_asin_op_sycl {
+  EIGEN_EMPTY_STRUCT_CTOR(scalar_asin_op_sycl)
+  inline const Scalar operator() (const Scalar& a) const { return cl::sycl::asin(a); }
+};
+
+template <typename T>
+struct asin_sycl : base<T, scalar_asin_op_sycl<T> > {};
+
+// atan
+template<typename Scalar> struct scalar_atan_op_sycl {
+  EIGEN_EMPTY_STRUCT_CTOR(scalar_atan_op_sycl)
+  inline const Scalar operator() (const Scalar& a) const { return cl::sycl::atan(a); }
+};
+
+template <typename T>
+struct atan_sycl : base<T, scalar_atan_op_sycl<T> > {};
+
+// ceil
+template<typename Scalar> struct scalar_ceil_op_sycl {
+  EIGEN_EMPTY_STRUCT_CTOR(scalar_ceil_op_sycl)
+  inline const Scalar operator() (const Scalar& a) const { return cl::sycl::ceil(a); }
+};
+
+template <typename T>
+struct ceil_sycl : base<T, scalar_ceil_op_sycl<T> > {};
+
+// cos
+template<typename Scalar> struct scalar_cos_op_sycl {
+  EIGEN_EMPTY_STRUCT_CTOR(scalar_cos_op_sycl)
+  inline const Scalar operator() (const Scalar& a) const { return cl::sycl::cos(a); }
+};
+
+template <typename T>
+struct cos_sycl : base<T, scalar_cos_op_sycl<T> > {};
+
+// exp
+template<typename Scalar> struct scalar_exp_op_sycl {
+  EIGEN_EMPTY_STRUCT_CTOR(scalar_exp_op_sycl)
+  inline const Scalar operator() (const Scalar& a) const { return cl::sycl::exp(a); }
+};
+
+template <typename T>
+struct exp_sycl : base<T, scalar_exp_op_sycl<T> > {};
+
+// floor
+template<typename Scalar> struct scalar_floor_op_sycl {
+  EIGEN_EMPTY_STRUCT_CTOR(scalar_floor_op_sycl)
+  inline const Scalar operator() (const Scalar& a) const { return cl::sycl::floor(a); }
+};
+
+template <typename T>
+struct floor_sycl : base<T, scalar_floor_op_sycl<T> > {};
+
+// log
+template<typename Scalar> struct scalar_log_op_sycl {
+  EIGEN_EMPTY_STRUCT_CTOR(scalar_log_op_sycl)
+  inline const Scalar operator() (const Scalar& a) const { return cl::sycl::log(a); }
+};
+
+template <typename T>
+struct log_sycl : base<T, scalar_log_op_sycl<T> > {};
+
+// log
+template<typename Scalar> struct scalar_log1p_op_sycl {
+  EIGEN_EMPTY_STRUCT_CTOR(scalar_log1p_op_sycl)
+  inline const Scalar operator() (const Scalar& a) const { return cl::sycl::log1p(a); }
+};
+
+template <typename T>
+struct log1p_sycl : base<T, scalar_log1p_op_sycl<T> > {};
+
+
+// sqrt
+template<typename Scalar> struct scalar_sqrt_op_sycl {
+  EIGEN_EMPTY_STRUCT_CTOR(scalar_sqrt_op_sycl)
+  inline const Scalar operator() (const Scalar& a) const { return cl::sycl::sqrt(a); }
+};
+
+// sin
+template<typename Scalar> struct scalar_sin_op_sycl {
+  EIGEN_EMPTY_STRUCT_CTOR(scalar_sin_op_sycl)
+  inline const Scalar operator() (const Scalar& a) const { return cl::sycl::sin(a); }
+};
+
+template <typename T>
+struct sin_sycl : base<T, scalar_sin_op_sycl<T> > {};
+
+
+// sqrt
+template <typename T>
+struct sqrt_sycl : base<T, scalar_sqrt_op_sycl<T> > {};
+
+
+
 
 template <typename Index, int N> Eigen::array<Index, N> GenerateArrayOfOnes() {
   Eigen::array<Index, N> result;

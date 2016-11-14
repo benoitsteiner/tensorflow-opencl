@@ -18,7 +18,17 @@ limitations under the License.
 namespace tensorflow {
 REGISTER2(BinaryOp, CPU, "FloorMod", functor::safe_floor_mod, int32, int64);
 REGISTER2(BinaryOp, CPU, "FloorMod", functor::floor_fmod, float, double);
-
+#if TENSORFLOW_USE_SYCL
+#undef REGISTER_SYCL_KERNEL
+#define REGISTER_SYCL_KERNEL(TYPE)                                    \
+  REGISTER_KERNEL_BUILDER(                                            \
+                          Name("FloorMod")                            \
+                          .Device(DEVICE_SYCL)                        \
+                          .TypeConstraint<TYPE>("T"),                 \
+                          BinaryOp<SYCLDevice, functor::floor_fmod<TYPE>>);
+REGISTER_SYCL_KERNEL(float);
+#undef REGISTER_SYCL_KERNEL
+#endif // TENSORFLOW_USE_SYCL
 #if GOOGLE_CUDA
 // A special GPU kernel for int32.
 // TODO(b/25387198): Also enable int32 in device memory. This kernel

@@ -18,6 +18,10 @@ limitations under the License.
 namespace tensorflow {
 REGISTER_KERNEL_BUILDER(Name("LogicalAnd").Device(DEVICE_CPU),
                         BinaryOp<CPUDevice, functor::logical_and>);
+#if TENSORFLOW_USE_SYCL
+REGISTER_KERNEL_BUILDER(Name("LogicalAnd").Device(DEVICE_SYCL),
+                        BinaryOp<SYCLDevice, functor::logical_and>);
+#endif // TENSORFLOW_USE_SYCL
 #if GOOGLE_CUDA
 REGISTER_KERNEL_BUILDER(Name("LogicalAnd").Device(DEVICE_GPU),
                         BinaryOp<GPUDevice, functor::logical_and>);
