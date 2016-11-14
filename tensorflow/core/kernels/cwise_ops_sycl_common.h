@@ -128,7 +128,6 @@ template<typename Scalar> struct scalar_sin_op_sycl {
 template <typename T>
 struct sin_sycl : base<T, scalar_sin_op_sycl<T> > {};
 
-
 // sqrt
 template<typename Scalar> struct scalar_sqrt_op_sycl {
   EIGEN_EMPTY_STRUCT_CTOR(scalar_sqrt_op_sycl)
@@ -202,6 +201,14 @@ template<typename Scalar> struct scalar_tan_op_sycl {
 template <typename T>
 struct tan_sycl : base<T, scalar_tan_op_sycl<T> > {};
 
+// tanh
+template<typename Scalar> struct scalar_tanh_op_sycl {
+  EIGEN_EMPTY_STRUCT_CTOR(scalar_tanh_op_sycl)
+  inline const Scalar operator() (const Scalar& a) const { return cl::sycl::tanh(a); }
+};
+
+template <typename T>
+struct tanh_sycl : base<T, scalar_tanh_op_sycl<T> > {};
 
 template <typename Index, int N> Eigen::array<Index, N> GenerateArrayOfOnes() {
   Eigen::array<Index, N> result;

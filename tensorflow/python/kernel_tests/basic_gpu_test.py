@@ -91,6 +91,8 @@ class MathBuiltinUnaryTest(tf.test.TestCase):
     self._compare(data, np.sin, tf.sin, use_gpu)
     self._compare(data, np.sqrt, tf.sqrt, use_gpu)
     self._compare(data, np.square, tf.square, use_gpu)
+    self._compare(data, np.tan, tf.tan, use_gpu)
+    self._compare(data, np.tanh, tf.tanh, use_gpu)
 
   def testTypes(self):
     for dtype in [np.float32]:
