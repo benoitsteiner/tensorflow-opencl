@@ -47,6 +47,7 @@ class GPUBinaryOpsTest(tf.test.TestCase):
     self._compareGPU(x, y, np.subtract, tf.sub)
     self._compareGPU(x, y, np.multiply, tf.mul)
     self._compareGPU(x, y + 0.1, np.true_divide, tf.truediv)
+    self._compareGPU(x, y + 0.1, np.floor_divide, tf.floordiv)
 
   def _GetGradientArgs(self, xs, ys):
     with self.test_session(use_gpu=True) as sess:
@@ -85,6 +86,51 @@ class MathBuiltinUnaryTest(tf.test.TestCase):
   def testTypes(self):
     for dtype in [np.float32]:
       self._testDtype(dtype, use_gpu=True)
+
+class IsFiniteInfNanTest(tf.test.TestCase):
+
+  def _compare(self, x, use_gpu):
+    np_finite, np_inf, np_nan = np.isfinite(x), np.isinf(x), np.isnan(x)
+    with self.test_session(use_gpu=use_gpu) as sess:
+      inx = tf.convert_to_tensor(x)
+      ofinite, oinf, onan = tf.is_finite(inx), tf.is_inf(
+          inx), tf.is_nan(inx)
+      tf_finite, tf_inf, tf_nan = sess.run([ofinite, oinf, onan])
+    self.assertAllEqual(np_inf, tf_inf)
+    self.assertAllEqual(np_nan, tf_nan)
+    self.assertAllEqual(np_finite, tf_finite)
+    self.assertShapeEqual(np_inf, oinf)
+    self.assertShapeEqual(np_nan, onan)
+    self.assertShapeEqual(np_finite, ofinite)
+
+  def _testDtype(self, dtype):
+    fi = np.finfo(dtype)
+    data = np.array([0, -1, 1, fi.resolution, -fi.resolution, fi.min, fi.max,
+                     -np.inf, np.inf, np.nan]).astype(dtype)
+    self._compare(data, use_gpu=False)
+    self._compare(data, use_gpu=True)
+
+  def testFloat(self):
+    self._testDtype(np.float32)
+
+  def testSqrt(self):
+    for dtype in [np.float32]:
+      fi = np.finfo(dtype)
+      for size in [1, 3, 4, 7, 8, 63, 64, 65]:
+        # For float32 Eigen uses Carmack's fast vectorized sqrt algorithm.
+        # It is not accurate for very large arguments, so we test for
+        # fi.max/100 instead of fi.max here.
+        for value in [fi.min, -2, -1, 0, fi.tiny, 1, 2, 1000, fi.max/100]:
+          x = np.full((size,), value, dtype=dtype)
+          np_y = np.sqrt(x)
+          np_nan = np.isnan(np_y)
+          with self.test_session(use_gpu=True):
+            tf_y = tf.sqrt(x)
+            tf_nan = tf.is_nan(tf_y)
+            if value < 0:
+              self.assertAllEqual(np_nan, tf_nan.eval())
+            else:
+              self.assertAllCloseAccordingToType(np_y, tf_y.eval())
 
 if __name__ == "__main__":
   tf.test.main()

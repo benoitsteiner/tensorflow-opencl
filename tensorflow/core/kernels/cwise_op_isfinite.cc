@@ -24,8 +24,8 @@ REGISTER3(UnaryOp, CPU, "IsFinite", functor::isfinite, float, Eigen::half,
                           Name("IsFinite")                            \
                           .Device(DEVICE_SYCL)                        \
                           .TypeConstraint<TYPE>("T"),                 \
-                          UnaryOp<SYCLDevice, functor::isfinite<TYPE>>);
-TF_CALL_REAL_NUMBER_TYPES(REGISTER_SYCL_KERNEL);
+                          UnaryOp<SYCLDevice, functor::isfinite_sycl<TYPE>>);
+REGISTER_SYCL_KERNEL(float);
 #undef REGISTER_SYCL_KERNEL
 #endif // TENSORFLOW_USE_SYCL
 #if GOOGLE_CUDA
