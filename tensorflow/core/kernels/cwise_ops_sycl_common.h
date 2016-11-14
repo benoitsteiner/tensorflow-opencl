@@ -193,6 +193,16 @@ template<typename Scalar> struct scalar_rsqrt_op_sycl {
 template <typename T>
 struct rsqrt_sycl : base<T, scalar_rsqrt_op_sycl<T> > {};
 
+// tan
+template<typename Scalar> struct scalar_tan_op_sycl {
+  EIGEN_EMPTY_STRUCT_CTOR(scalar_tan_op_sycl)
+  inline const Scalar operator() (const Scalar& a) const { return cl::sycl::tan(a); }
+};
+
+template <typename T>
+struct tan_sycl : base<T, scalar_tan_op_sycl<T> > {};
+
+
 template <typename Index, int N> Eigen::array<Index, N> GenerateArrayOfOnes() {
   Eigen::array<Index, N> result;
   for (int i = 0; i < N; ++i) {
