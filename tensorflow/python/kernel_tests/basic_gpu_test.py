@@ -47,15 +47,58 @@ class GPUBinaryOpsTest(tf.test.TestCase):
     self._compareGPU(x, y, np.subtract, tf.sub)
     self._compareGPU(x, y, np.multiply, tf.mul)
     self._compareGPU(x, y + 0.1, np.true_divide, tf.truediv)
+    self._compareGPU(x, y + 0.1, np.floor_divide, tf.floordiv)
+    self._compareGPU(x, y, np.power, tf.pow)
 
-  #def _GetGradientArgs(self, xs, ys):
-    #with self.test_session(use_gpu=True) as sess:
-     # return sess.run(_broadcast_gradient_args(xs, ys))
+class MathBuiltinUnaryTest(tf.test.TestCase):
 
-  #def testBroadcast(self):
-    #r0, r1 = self._GetGradientArgs([2, 3, 5], [1])
-    #self.assertAllEqual(r0, [])
-    #self.assertAllEqual(r1, [0, 1, 2])
+  def _compare(self, x, np_func, tf_func, use_gpu):
+    np_out = np_func(x)
+    with self.test_session(use_gpu=use_gpu) as sess:
+     inx = tf.convert_to_tensor(x)
+     ofunc = tf_func(inx)
+     tf_out = sess.run(ofunc)
+    self.assertAllClose(np_out, tf_out)
+
+  def _inv(self, x):
+    return 1.0 / x
+
+  def _rsqrt(self, x):
+    return self._inv(np.sqrt(x))
+
+  def _testDtype(self, dtype, use_gpu):
+    data = (np.arange(-3, 3) / 4.).reshape([1, 3, 2]).astype(dtype)
+    self._compare(data, np.abs, tf.abs, use_gpu)
+    self._compare(data, np.arccos, tf.acos, use_gpu)
+    self._compare(data, np.arcsin, tf.asin, use_gpu)
+    self._compare(data, np.arctan, tf.atan, use_gpu)
+    self._compare(data, np.ceil, tf.ceil, use_gpu)
+    self._compare(data, np.cos, tf.cos, use_gpu)
+    self._compare(data, np.exp, tf.exp, use_gpu)
+    self._compare(data, np.floor, tf.floor, use_gpu)
+    self._compare(data, np.log, tf.log, use_gpu)
+    self._compare(data, np.log1p, tf.log1p, use_gpu)
+    self._compare(data, np.negative, tf.neg, use_gpu)
+    self._compare(data, self._rsqrt, tf.rsqrt, use_gpu)
+    self._compare(data, np.sin, tf.sin, use_gpu)
+    self._compare(data, np.sqrt, tf.sqrt, use_gpu)
+    self._compare(data, np.square, tf.square, use_gpu)
+    self._compare(data, np.tan, tf.tan, use_gpu)
+    self._compare(data, np.tanh, tf.tanh, use_gpu)
+
+  def testTypes(self):
+    for dtype in [np.float32]:
+      self._testDtype(dtype, use_gpu=True)
       
+class BroadcastSimpleTest(tf.test.TestCase):
+  def _GetGradientArgs(self, xs, ys):
+    with self.test_session(use_gpu=True) as sess:
+      return sess.run(_broadcast_gradient_args(xs, ys))
+
+  def testBroadcast(self):
+    r0, r1 = self._GetGradientArgs([2, 3, 5], [1])
+    self.assertAllEqual(r0, [])
+    self.assertAllEqual(r1, [0, 1, 2])
+
 if __name__ == "__main__":
   tf.test.main()
