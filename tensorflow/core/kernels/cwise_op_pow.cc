@@ -18,6 +18,18 @@ limitations under the License.
 namespace tensorflow {
 REGISTER7(BinaryOp, CPU, "Pow", functor::pow, float, Eigen::half, double, int32,
           int64, complex64, complex128);
+
+#if TENSORFLOW_USE_SYCL
+#define REGISTER_SYCL_KERNEL(TYPE)                                    \
+  REGISTER_KERNEL_BUILDER(                                            \
+                          Name("Pow")                                 \
+                          .Device(DEVICE_SYCL)                        \
+                          .TypeConstraint<TYPE>("T"),                 \
+                          BinaryOp<SYCLDevice, functor::pow<TYPE>>);
+TF_CALL_GPU_NUMBER_TYPES_NO_HALF(REGISTER_SYCL_KERNEL);
+#undef REGISTER_SYCL_KERNEL
+#endif // TENSORFLOW_USE_SYCL
+
 #if GOOGLE_CUDA
 REGISTER4(BinaryOp, GPU, "Pow", functor::pow, float, Eigen::half, double,
           int64);
