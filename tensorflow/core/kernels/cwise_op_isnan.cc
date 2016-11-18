@@ -24,7 +24,7 @@ REGISTER3(UnaryOp, CPU, "IsNan", functor::isnan, float, Eigen::half, double);
                           Name("IsNan")                               \
                           .Device(DEVICE_SYCL)                        \
                           .TypeConstraint<TYPE>("T"),                 \
-                          UnaryOp<SYCLDevice, functor::isnan_sycl<TYPE>>);
+                          UnaryOp<SYCLDevice, functor::isnan<TYPE>>);
 REGISTER_SYCL_KERNEL(float);
 #undef REGISTER_SYCL_KERNEL
 #endif // TENSORFLOW_USE_SYCL

@@ -24,49 +24,13 @@ limitations under the License.
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 
 #include "tensorflow/core/framework/register_types.h"
-//#include "tensorflow/core/framework/tensor_types.h"
 #include "tensorflow/core/kernels/cwise_ops.h"
-//#include "tensorflow/core/platform/logging.h"
 #include "tensorflow/core/platform/types.h"
 
 namespace tensorflow {
 namespace functor {
 
 typedef Eigen::SyclDevice SYCLDevice;
-
-// isinf
-template<typename Scalar> struct scalar_isinf_op_sycl {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_isinf_op_sycl)
-  inline const bool operator() (const Scalar& a) const { return static_cast<bool>(cl::sycl::isinf(a)); }
-};
-
-template <typename T>
-struct isinf_sycl : base<T, scalar_isinf_op_sycl<T>, bool> {};
-
-// isnan
-struct scalar_isnan_op_sycl {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_isnan_op_sycl)
-  template<typename Scalar>
-  inline const bool operator() (const Scalar& a) const {
-#if __SYCL_DEVICE_ONLY__
-    return static_cast<bool>(cl::sycl::isnan(a));
-#else
-    return (Eigen::numext::isnan)(a);
-#endif
-  }
-};
-
-template <typename T>
-struct isnan_sycl : base<T, scalar_isnan_op_sycl, bool> {};
-
-// isfinite
-template<typename Scalar> struct scalar_isfinite_op_sycl {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_isfinite_op_sycl)
-  inline const bool operator() (const Scalar& a) const { return static_cast<bool>(cl::sycl::isfinite(a)); }
-};
-
-template <typename T>
-struct isfinite_sycl : base<T, scalar_isfinite_op_sycl<T>, bool> {};
 
 template <typename Index, int N> Eigen::array<Index, N> GenerateArrayOfOnes() {
   Eigen::array<Index, N> result;
@@ -103,7 +67,7 @@ struct BinaryFunctor<SYCLDevice, Functor, NDIMS, has_errors> {
             typename Functor::tscalar_type scalar,
             typename Functor::tin_type in, bool* error) {
     typedef typename Functor::func Binary;
-    constexpr int NumDims = Functor::tin_type::NumDimensions; 
+    constexpr int NumDims = Functor::tin_type::NumDimensions;
     typedef typename Functor::tin_type::Scalar T;
     typedef typename Functor::tin_type::Index Index;
     Eigen::array<Index, NumDims> scalar_dim = GenerateArrayOfOnes<Index, NumDims>();
