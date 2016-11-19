@@ -50,8 +50,32 @@ class GPUBinaryOpsTest(tf.test.TestCase):
     self._compareGPU(x, y + 0.1, np.floor_divide, tf.floordiv)
     self._compareGPU(x, y, np.power, tf.pow)
 
-class MathBuiltinUnaryTest(tf.test.TestCase):
+  def testFloatWithBCast(self):
+    x = np.linspace(-5, 20, 15).reshape(3, 5).astype(np.float32)
+    y = np.linspace(20, -5, 30).reshape(2, 3, 5).astype(np.float32)
+    self._compareGPU(x, y, np.add, tf.add)
+    self._compareGPU(x, y, np.subtract, tf.sub)
+    self._compareGPU(x, y, np.multiply, tf.mul)
+    self._compareGPU(x, y + 0.1, np.true_divide, tf.truediv)
 
+  def testDoubleBasic(self):
+    x = np.linspace(-5, 20, 15).reshape(1, 3, 5).astype(np.float64)
+    y = np.linspace(20, -5, 15).reshape(1, 3, 5).astype(np.float64)
+    self._compareGPU(x, y, np.add, tf.add)
+    self._compareGPU(x, y, np.subtract, tf.sub)
+    self._compareGPU(x, y, np.multiply, tf.mul)
+    self._compareGPU(x, y + 0.1, np.true_divide, tf.truediv)
+
+  def testDoubleWithBCast(self):
+    x = np.linspace(-5, 20, 15).reshape(3, 5).astype(np.float64)
+    y = np.linspace(20, -5, 30).reshape(2, 3, 5).astype(np.float64)
+    self._compareGPU(x, y, np.add, tf.add)
+    self._compareGPU(x, y, np.subtract, tf.sub)
+    self._compareGPU(x, y, np.multiply, tf.mul)
+    self._compareGPU(x, y + 0.1, np.true_divide, tf.truediv)
+
+
+class MathBuiltinUnaryTest(tf.test.TestCase):
   def _compare(self, x, np_func, tf_func, use_gpu):
     np_out = np_func(x)
     with self.test_session(use_gpu=use_gpu) as sess:
