@@ -188,10 +188,6 @@ class BroadcastSimpleTest(tf.test.TestCase):
       iny = tf.convert_to_tensor(y)
       out = tf_func(inx, iny)
       tf_gpu = out.eval()
-      print("=== OUT ===")
-      print(np_ans)
-      print("=== GPU ===")
-      print(tf_gpu)
     self.assertAllClose(np_ans, tf_gpu)
     self.assertShapeEqual(np_ans, out)
     # TODO(zhifengc/ke): make gradient checker work on GPU.
@@ -203,10 +199,6 @@ class BroadcastSimpleTest(tf.test.TestCase):
     self._compareGradientX(x , y, np.true_divide, tf.truediv)
     self._compareGradientY(x, y, np.true_divide, tf.truediv)
     self._compareGpu(x, y, np.true_divide, tf.truediv)
-    print("x")
-    print(x)
-    print("y")
-    print(y)
     self._compareGpu(x, y +0.1  , np.floor_divide, tf.floordiv)
 
 if __name__ == "__main__":
