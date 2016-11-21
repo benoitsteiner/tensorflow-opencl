@@ -23,6 +23,7 @@ import math
 import numpy as np
 from tensorflow.python.ops import gen_math_ops
 from tensorflow.python.ops.gen_array_ops import _broadcast_gradient_args
+
 class GPUBinaryOpsTest(tf.test.TestCase):
   def _compareGPU(self, x, y, np_func, tf_func):
     with self.test_session(use_gpu=True) as sess:
@@ -113,20 +114,20 @@ class MathBuiltinUnaryTest(tf.test.TestCase):
     for dtype in [np.float32]:
       self._testDtype(dtype, use_gpu=True)
 
-def testFloorDevide(self):
-  x = (1 + np.linspace(0, 5, np.prod([1, 3, 2]))).astype(np.float32).reshape([1, 3, 2])
-  y = (1 + np.linspace(0, 5, np.prod([1, 3, 2]))).astype(np.float32).reshape([1, 3, 2])
+  def testFloorDevide(self):
+    x = (1 + np.linspace(0, 5, np.prod([1, 3, 2]))).astype(np.float32).reshape([1, 3, 2])
+    y = (1 + np.linspace(0, 5, np.prod([1, 3, 2]))).astype(np.float32).reshape([1, 3, 2])
 
-  np_out = np.floordiv(x, y)
+    np_out = np.floordiv(x, y)
 
-  with self.test_session(use_gpu=True) as sess:
-    inx = tf.convert_to_tensor(x)
-    iny = tf.convert_to_tensor(y)
-    ofunc = inx / iny
-    out_func2 = tf.floor(ofunc)
-    tf_out = sess.run(out_func2)
+    with self.test_session(use_gpu=True) as sess:
+      inx = tf.convert_to_tensor(x)
+      iny = tf.convert_to_tensor(y)
+      ofunc = inx / iny
+      out_func2 = tf.floor(ofunc)
+      tf_out = sess.run(out_func2)
 
-  self.assertAllClose(np_out, tf_out)
+    self.assertAllClose(np_out, tf_out)
 
 class BroadcastSimpleTest(tf.test.TestCase):
   def _GetGradientArgs(self, xs, ys):
