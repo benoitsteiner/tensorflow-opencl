@@ -118,7 +118,7 @@ class MathBuiltinUnaryTest(tf.test.TestCase):
     x = (1 + np.linspace(0, 5, np.prod([1, 3, 2]))).astype(np.float32).reshape([1, 3, 2])
     y = (1 + np.linspace(0, 5, np.prod([1, 3, 2]))).astype(np.float32).reshape([1, 3, 2])
 
-    np_out = np.floordiv(x, y)
+    np_out = np.floor_divide(x, y)
 
     with self.test_session(use_gpu=True) as sess:
       inx = tf.convert_to_tensor(x)
