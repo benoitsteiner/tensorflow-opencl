@@ -52,7 +52,7 @@ REGISTER_KERNEL_BUILDER(Name("IsVariableInitialized").Device(DEVICE_CPU),
                           .HostMemory("is_initialized"),                \
                           IsVariableInitializedOp);
 
-TF_CALL_NUMBER_TYPES(REGISTER_SYCL_KERNEL);
+REGISTER_SYCL_KERNEL(float);
 #undef REGISTER_SYCL_KERNEL
 #endif
 

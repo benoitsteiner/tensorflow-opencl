@@ -26,7 +26,7 @@ REGISTER7(UnaryOp, CPU, "Square", functor::square, float, Eigen::half, double,
                           .Device(DEVICE_SYCL)                        \
                           .TypeConstraint<TYPE>("T"),                 \
                           UnaryOp<SYCLDevice, functor::square<TYPE>>);
-TF_CALL_GPU_NUMBER_TYPES_NO_HALF(REGISTER_SYCL_KERNEL);
+REGISTER_SYCL_KERNEL(float);
 #undef REGISTER_SYCL_KERNEL
 #endif // TENSORFLOW_USE_SYC
 
