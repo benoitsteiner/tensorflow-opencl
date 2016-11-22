@@ -14,6 +14,9 @@ limitations under the License.
 ==============================================================================*/
 
 #define EIGEN_USE_THREADS
+#ifdef TENSORFLOW_USE_SYCL
+#define EIGEN_USE_SYCL
+#endif
 
 #include "tensorflow/core/kernels/training_ops.h"
 #include <algorithm>
@@ -25,6 +28,9 @@ namespace tensorflow {
 
 using CPUDevice = Eigen::ThreadPoolDevice;
 using GPUDevice = Eigen::GpuDevice;
+#ifdef TENSORFLOW_USE_SYCL
+using SYCLDevice = Eigen::SyclDevice;
+#endif // TENSORFLOW_USE_SYCL
 
 namespace {
 template <class T>
@@ -238,6 +244,27 @@ struct ApplyAdam<CPUDevice, T> {
     var.device(d) -= (m * alpha) / (v.sqrt() + epsilon());
   }
 };
+
+#ifdef TENSORFLOW_USE_SYCL
+template <typename T>
+struct ApplyAdam<SYCLDevice, T> {
+  void operator()(const SYCLDevice& d, typename TTypes<T>::Flat var,
+                  typename TTypes<T>::Flat m, typename TTypes<T>::Flat v,
+                  typename TTypes<T>::ConstScalar beta1_power,
+                  typename TTypes<T>::ConstScalar beta2_power,
+                  typename TTypes<T>::ConstScalar lr,
+                  typename TTypes<T>::ConstScalar beta1,
+                  typename TTypes<T>::ConstScalar beta2,
+                  typename TTypes<T>::ConstScalar epsilon,
+                  typename TTypes<T>::ConstFlat grad) {
+    const T alpha = lr() * Eigen::numext::sqrt(T(1) - beta2_power()) /
+                    (T(1) - beta1_power());
+    m.device(d) += (grad - m) * (T(1) - beta1());
+    v.device(d) += (grad.square() - v) * (T(1) - beta2());
+    var.device(d) -= (m * alpha) / (v.sqrt() + epsilon());
+  }
+};
+#endif // TENSORFLOW_USE_SYCL
 
 template <typename T>
 struct ApplyRMSProp<CPUDevice, T> {
@@ -2128,6 +2155,9 @@ class ApplyAdamOp : public OpKernel {
 
 using CPUDevice = Eigen::ThreadPoolDevice;
 using GPUDevice = Eigen::GpuDevice;
+#ifdef TENSORFLOW_USE_SYCL
+using SYCLDevice = Eigen::SyclDevice;
+#endif // TENSORFLOW_USE_SYCL
 
 #define REGISTER_KERNELS(D, T)                                     \
   REGISTER_KERNEL_BUILDER(                                         \
@@ -2165,6 +2195,12 @@ REGISTER_KERNELS(GPU, Eigen::half);
 REGISTER_KERNELS(GPU, float);
 REGISTER_KERNELS(GPU, double);
 #endif
+
+#ifdef TENSORFLOW_USE_SYCL
+// Forward declarations of the functor specializations for GPU.
+REGISTER_KERNELS(SYCL, float);
+#endif // TENSORFLOW_USE_SYCL
+
 #undef REGISTER_CPU_KERNELS
 #undef REGISTER_KERNELS
 
