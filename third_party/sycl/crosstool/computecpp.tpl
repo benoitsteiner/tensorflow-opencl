@@ -36,16 +36,18 @@ def main():
       filename, file_extension = os.path.splitext(output_file_name)
       bc_out = filename + '.sycl'
 
+      # strip asan for the device
+      computecpp_compiler_flags = [flag for flag in computecpp_compiler_flags if not flag.startswith(('-fsanitize'))]
       computecpp_compiler_flags = ['--sycl-no-diags', '-sycl-compress-name', '-DTENSORFLOW_USE_SYCL', '-Wno-unused-variable', '-I', COMPUTECPP_INCLUDE, '-isystem',
       COMPUTECPP_INCLUDE, '-std=c++11', '-sycl', '-emit-llvm', '-no-serial-memop'] + computecpp_compiler_flags
 
-      # dont want that in case of compiling with computecpp first
-      host_compiler_flags = [flag for flag in sys.argv[1:]
-                                if not flag.startswith(('-MF', '-MD',))
-                                if not '.d' in flag]
-
       x = subprocess.call([COMPUTECPP_DRIVER] + computecpp_compiler_flags )
       if(x == 0):
+          # dont want that in case of compiling with computecpp first
+          host_compiler_flags = [flag for flag in sys.argv[1:]
+                                    if not flag.startswith(('-MF', '-MD',))
+                                    if not '.d' in flag]
+
           host_compiler_flags = ['-D_GLIBCXX_USE_CXX11_ABI=0', '-DTENSORFLOW_USE_SYCL', '-Wno-unused-variable', '-I', COMPUTECPP_INCLUDE, '--include', bc_out] + host_compiler_flags
           x = subprocess.call([CPU_CXX_COMPILER] + host_compiler_flags)
       return x
