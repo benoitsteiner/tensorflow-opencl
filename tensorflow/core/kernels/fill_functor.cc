@@ -16,6 +16,9 @@ limitations under the License.
 #include "tensorflow/core/kernels/fill_functor.h"
 
 #define EIGEN_USE_THREADS
+#ifdef TENSORFLOW_USE_SYCL
+#define EIGEN_USE_SYCL
+#endif // TENSORFLOW_USE_SYCL
 
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 #include "tensorflow/core/framework/tensor_types.h"
@@ -52,6 +55,19 @@ DEFINE_SETZERO_CPU(complex64);
 DEFINE_SETZERO_CPU(complex128);
 DEFINE_SETZERO_CPU(string);
 #undef DEFINE_SETZERO_CPU
+
+#ifdef TENSORFLOW_USE_SYCL
+template <typename T>
+void SetZeroFunctor<Eigen::SyclDevice, T>::operator()(
+    const Eigen::SyclDevice& d, typename TTypes<T>::Flat out) {
+  out.device(d) = out.constant(T(0));
+}
+
+#define DEFINE_SETZERO_SYCL(T) \
+  template struct SetZeroFunctor<Eigen::SyclDevice, T>;
+DEFINE_SETZERO_SYCL(float);
+#undef DEFINE_SETZERO_SYCL
+#endif // TENSORFLOW_USE_SYCL
 
 }  // namespace functor
 }  // namespace tensorflow
