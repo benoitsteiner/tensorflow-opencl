@@ -229,10 +229,10 @@ REGISTER_KERNEL_BUILDER(Name("Rank").Device(DEVICE_CPU).HostMemory("output"),
 
 #ifdef TENSORFLOW_USE_SYCL
 #define REGISTER_SYCL_KERNEL(type)                        \
-  REGISTER_KERNEL_BUILDER(Name("Rank")                   \
+  REGISTER_KERNEL_BUILDER(Name("Rank")                    \
                               .Device(DEVICE_SYCL)        \
-                              .TypeConstraint<type>("T") \
-                              .HostMemory("output"),     \
+                              .TypeConstraint<type>("T")  \
+                              .HostMemory("output"),      \
                           RankOp);
 REGISTER_SYCL_KERNEL(float);
 #undef REGISTER_SYCL_KERNEL
