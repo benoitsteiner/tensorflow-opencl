@@ -28,7 +28,7 @@ def main():
     # we are linking
     return subprocess.call([CPU_CXX_COMPILER] + compiler_flags)
 
-  compiler_flags = compiler_flags + ['-D_GLIBCXX_USE_CXX11_ABI=0']
+  compiler_flags = compiler_flags + ['-D_GLIBCXX_USE_CXX11_ABI=0', '-DEIGEN_USE_SYCL=1']
 
   # find what we compile
   compiling_cpp = 0

@@ -16,9 +16,6 @@ limitations under the License.
 #include "tensorflow/core/kernels/fill_functor.h"
 
 #define EIGEN_USE_THREADS
-#ifdef TENSORFLOW_USE_SYCL
-#define EIGEN_USE_SYCL
-#endif // TENSORFLOW_USE_SYCL
 
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 #include "tensorflow/core/framework/tensor_types.h"
