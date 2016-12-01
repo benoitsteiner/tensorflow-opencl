@@ -43,8 +43,11 @@ static std::vector<string> ListDevices(TF_Status* out_status) {
           out_status,
           errors::Internal("Could not serialize device string"));
       output.clear();
+      devices.clear();
       return output;
     }
+    if(device->device_type() == DEVICE_SYCL)
+      delete device;
     output.push_back(attr_serialized);
   }
 
