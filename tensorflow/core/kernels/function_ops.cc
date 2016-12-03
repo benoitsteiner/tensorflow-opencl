@@ -236,15 +236,11 @@ class SymbolicGradientOp : public AsyncOpKernel {
 
 REGISTER_KERNEL_BUILDER(Name(kGradientOp).Device(DEVICE_CPU),
                         SymbolicGradientOp);
-#ifdef TENSORFLOW_USE_SYCL
-REGISTER_KERNEL_BUILDER(Name(kGradientOp).Device(DEVICE_SYCL),
-                        SymbolicGradientOp);
-#endif // TENSORFLOW_USE_SYCL
 REGISTER_KERNEL_BUILDER(Name(kGradientOp).Device(DEVICE_GPU),
                         SymbolicGradientOp);
 #if TENSORFLOW_USE_SYCL
 REGISTER_KERNEL_BUILDER(Name(kGradientOp).Device(DEVICE_SYCL),
                         SymbolicGradientOp);
 
-#endif
+#endif // TENSORFLOW_USE_SYCL
 }  // namespace tensorflow
