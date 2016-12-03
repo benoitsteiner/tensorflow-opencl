@@ -43,9 +43,12 @@ public:
         sycl_allocator_(new SYCLAllocator(sycl_queue_)),
         device_context_(new SYCLDeviceContext()) {
     set_eigen_sycl_device(sycl_device_);
+    RegisterDevice();
   }
 
   ~SYCLDevice() override;
+
+  void EnterLameDuckMode();
 
   void Compute(OpKernel *op_kernel, OpKernelContext *context) override;
   Allocator *GetAllocator(AllocatorAttributes attr) override;
@@ -63,6 +66,8 @@ public:
   }
 
 private:
+  void RegisterDevice();
+
   Allocator *cpu_allocator_;          // owned
   Eigen::QueueInterface* sycl_queue_; // owned
   Eigen::SyclDevice* sycl_device_;    // owned
