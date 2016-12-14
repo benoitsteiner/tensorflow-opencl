@@ -50,54 +50,17 @@ load(
 )
 
 # List of proto files for android builds
-def tf_android_core_proto_sources():
+def tf_android_core_proto_sources(core_proto_sources_relative):
   return ["//tensorflow/core:" + p
-          for p in tf_android_core_proto_sources_relative()]
-
-# As tf_android_core_proto_sources, but paths relative to
-# //third_party/tensorflow/core.
-def tf_android_core_proto_sources_relative():
-    return [
-        "example/example.proto",
-        "example/feature.proto",
-        "framework/allocation_description.proto",
-        "framework/attr_value.proto",
-        "framework/cost_graph.proto",
-        "framework/device_attributes.proto",
-        "framework/function.proto",
-        "framework/graph.proto",
-        "framework/kernel_def.proto",
-        "framework/log_memory.proto",
-        "framework/node_def.proto",
-        "framework/op_def.proto",
-        "framework/resource_handle.proto",
-        "framework/step_stats.proto",
-        "framework/summary.proto",
-        "framework/tensor.proto",
-        "framework/tensor_description.proto",
-        "framework/tensor_shape.proto",
-        "framework/tensor_slice.proto",
-        "framework/types.proto",
-        "framework/versions.proto",
-        "lib/core/error_codes.proto",
-        "protobuf/config.proto",
-        "protobuf/tensor_bundle.proto",
-        "protobuf/saver.proto",
-        "util/memmapped_file_system.proto",
-        "util/saved_tensor_slice.proto",
-  ]
+          for p in core_proto_sources_relative]
 
 # Returns the list of pb.h and proto.h headers that are generated for
 # tf_android_core_proto_sources().
-def tf_android_core_proto_headers():
+def tf_android_core_proto_headers(core_proto_sources_relative):
   return (["//tensorflow/core/" + p.replace(".proto", ".pb.h")
-          for p in tf_android_core_proto_sources_relative()] +
+          for p in core_proto_sources_relative] +
          ["//tensorflow/core/" + p.replace(".proto", ".proto.h")
-          for p in tf_android_core_proto_sources_relative()])
-
-# Returns the list of protos for which proto_text headers should be generated.
-def tf_proto_text_protos_relative():
-  return [p for p in tf_android_core_proto_sources_relative()]
+          for p in core_proto_sources_relative])
 
 def if_android_arm(a):
   return select({
@@ -566,6 +529,7 @@ def _py_wrap_cc_impl(ctx):
   for dep in ctx.attr.deps:
     inputs += dep.cc.transitive_headers
   inputs += ctx.files._swiglib
+  inputs += ctx.files.toolchain_deps
   swig_include_dirs = set(_get_repository_roots(ctx, inputs))
   swig_include_dirs += sorted([f.dirname for f in ctx.files._swiglib])
   args = ["-c++",
@@ -599,6 +563,9 @@ _py_wrap_cc = rule(
         "deps": attr.label_list(
             allow_files = True,
             providers = ["cc"],
+        ),
+        "toolchain_deps": attr.label_list(
+            allow_files = True,
         ),
         "module_name": attr.string(mandatory = True),
         "py_module_name": attr.string(mandatory = True),
@@ -790,6 +757,7 @@ def tf_py_wrap_cc(name, srcs, swig_includes=[], deps=[], copts=[], **kwargs):
               srcs=srcs,
               swig_includes=swig_includes,
               deps=deps + extra_deps,
+              toolchain_deps=["//tools/defaults:crosstool"],
               module_name=module_name,
               py_module_name=name)
   extra_linkopts = select({
@@ -839,6 +807,14 @@ def tf_py_wrap_cc(name, srcs, swig_includes=[], deps=[], copts=[], **kwargs):
                       "//conditions:default": [":" + cc_library_name],
                     }))
 
+def py_test(deps=[], **kwargs):
+  native.py_test(
+      deps=select({
+          "//conditions:default" : deps,
+          "//tensorflow:no_tensorflow_py_deps" : []
+      }),
+      **kwargs)
+
 def tf_py_test(name, srcs, size="medium", data=[], main=None, args=[],
                tags=[], shard_count=1, additional_deps=[], flaky=0):
   native.py_test(
@@ -851,10 +827,13 @@ def tf_py_test(name, srcs, size="medium", data=[], main=None, args=[],
       visibility=["//tensorflow:internal"],
       shard_count=shard_count,
       data=data,
-      deps=[
-          "//tensorflow/python:extra_py_tests_deps",
-          "//tensorflow/python:gradient_checker",
-      ] + additional_deps,
+      deps=select({
+          "//conditions:default" : [
+            "//tensorflow/python:extra_py_tests_deps",
+            "//tensorflow/python:gradient_checker",
+          ] + additional_deps,
+          "//tensorflow:no_tensorflow_py_deps" : []
+      }),
       flaky=flaky,
       srcs_version="PY2AND3")
 

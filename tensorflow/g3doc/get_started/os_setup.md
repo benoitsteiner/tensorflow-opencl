@@ -885,10 +885,10 @@ remove the `_python_build` directory before running `bazel test`.
 
 ## Train your first TensorFlow neural net model
 
-Starting from the root of your source tree, run:
+Start by cloning the [TensorFlow models repo](https://github.com/tensorflow/models) from GitHub. Run the following commands:
 
 ```bash
-$ cd tensorflow/models/image/mnist
+$ cd models/tutorials/image/mnist
 $ python convolutional.py
 Successfully downloaded train-images-idx3-ubyte.gz 9912422 bytes.
 Successfully downloaded train-labels-idx1-ubyte.gz 28881 bytes.
@@ -1049,6 +1049,27 @@ Exception:
 ```
 
 Solution: Add an `--ignore-installed` flag to the pip command.
+
+#### Cannot remove entries from nonexistent file: easy-install.pth
+
+If during a `pip` installation using an Anaconda Python distribution you encounter the error:
+
+```
+Cannot remove entries from nonexistent file <path-to-anaconda-instalation>/anaconda[version]/lib/site-packages/easy-install.pth
+```
+
+1. Upgrade setuptools:  
+`pip install --upgrade -I setuptools`
+
+2. Install TensorFlow again adding `--ignore-installed` flag:  
+`pip install --ignore-installed --upgrade <tensorflow_url>`
+
+
+
+Step #1 might already solve the problem, however if it still persists, execute step #2.
+
+This issue occurs with new Anaconda installations when `pip` tries to remove `easy-install.pth`. 
+This file is not included in Anaconda packages, which causes the `pip` installation to fail.
 
 
 ### Linux issues
