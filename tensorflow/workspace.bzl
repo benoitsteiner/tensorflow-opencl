@@ -17,14 +17,14 @@ def tf_workspace(path_prefix = "", tf_repo_name = ""):
   # These lines need to be changed when updating Eigen. They are parsed from
   # this file by the cmake and make builds to determine the eigen version and
   # hash.
-  eigen_version = "10ed05e21096"
-  eigen_sha256 = "0b3cde9ef32c98f6e11f2f1cbb76909d797318d386e3aa0be60943cde3a22301"
+  eigen_version = "9012c736bc80"
+  eigen_sha256 = "d73c924a6ab7533b5e482f3d54ec3496cc33a31ba70fa2fc27a0d6c3eac0a077"
 
   native.new_http_archive(
     name = "eigen_archive",
-    url = "http://bitbucket.org/benoitsteiner/opencl/get/" + eigen_version + ".tar.gz",
+    url = "http://bitbucket.org/eigen/eigen/get/" + eigen_version + ".tar.gz",
     sha256 = eigen_sha256,
-    strip_prefix = "benoitsteiner-opencl-" + eigen_version,
+    strip_prefix = "eigen-eigen-" + eigen_version,
     build_file = str(Label("//:eigen.BUILD")),
   )
 
