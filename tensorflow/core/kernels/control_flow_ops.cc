@@ -597,8 +597,4 @@ class AbortOp : public OpKernel {
 
 REGISTER_KERNEL_BUILDER(Name("Abort").Device(DEVICE_CPU), AbortOp);
 
-#ifdef TENSORFLOW_USE_SYCL
-REGISTER_KERNEL_BUILDER(Name("Abort").Device(DEVICE_SYCL), AbortOp);
-#endif // TENSORFLOW_USE_SYCL
-
 }  // namespace tensorflow
