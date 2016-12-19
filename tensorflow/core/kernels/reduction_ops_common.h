@@ -40,6 +40,9 @@ namespace tensorflow {
 
 typedef Eigen::ThreadPoolDevice CPUDevice;
 typedef Eigen::GpuDevice GPUDevice;
+#ifdef TENSORFLOW_USE_SYCL
+typedef Eigen::SyclDevice SYCLDevice;
+#endif // TENSORFLOW_USE_SYCL
 
 template <typename Device>
 struct Constants {
@@ -66,7 +69,15 @@ struct Constants<CPUDevice> {
   const Eigen::IndexList<Eigen::type2index<1>> kOne;
   const Eigen::IndexList<Eigen::type2index<0>, Eigen::type2index<2>> kZeroTwo;
 };
-#endif
+#ifdef TENSORFLOW_USE_SYCL
+template <>
+struct Constants<SYCLDevice> {
+  const Eigen::IndexList<Eigen::type2index<0>> kZero;
+  const Eigen::IndexList<Eigen::type2index<1>> kOne;
+  const Eigen::IndexList<Eigen::type2index<0>, Eigen::type2index<2>> kZeroTwo;
+};
+#endif // TENSORFLOW_USE_SYCL
+#endif // EIGEN_HAS_INDEX_LIST
 
 class ReductionHelper {
  public:
@@ -254,6 +265,24 @@ struct ReduceFunctor<CPUDevice, Reducer> {
     FillIdentityEigenImpl(d, out, reducer);
   }
 };
+
+#ifdef TENSORFLOW_USE_SYCL
+template <typename Reducer>
+struct ReduceFunctor<SYCLDevice, Reducer> {
+  template <typename OUT_T, typename IN_T, typename ReductionAxes>
+  static void Reduce(const SYCLDevice& d, OUT_T out, IN_T in,
+                     const ReductionAxes& reduction_axes,
+                     const Reducer& reducer) {
+    ReduceEigenImpl(d, out, in, reduction_axes, reducer);
+  }
+
+  template <typename OUT_T>
+  static void FillIdentity(const SYCLDevice& d, OUT_T out,
+                           const Reducer& reducer) {
+    FillIdentityEigenImpl(d, out, reducer);
+  }
+};
+#endif // TENSORFLOW_USE_SYCL
 
 }  // namespace functor
 }  // namespace tensorflow
