@@ -63,19 +63,14 @@ struct Constants {
 };
 
 #if defined(EIGEN_HAS_INDEX_LIST)
-template <>
-struct Constants<CPUDevice> {
+struct ConstantsBase {
   const Eigen::IndexList<Eigen::type2index<0>> kZero;
   const Eigen::IndexList<Eigen::type2index<1>> kOne;
   const Eigen::IndexList<Eigen::type2index<0>, Eigen::type2index<2>> kZeroTwo;
 };
+template<> struct Constants<CPUDevice> : ConstantsBase{};
 #ifdef TENSORFLOW_USE_SYCL
-template <>
-struct Constants<SYCLDevice> {
-  const Eigen::IndexList<Eigen::type2index<0>> kZero;
-  const Eigen::IndexList<Eigen::type2index<1>> kOne;
-  const Eigen::IndexList<Eigen::type2index<0>, Eigen::type2index<2>> kZeroTwo;
-};
+template<> struct Constants<SYCLDevice> : ConstantsBase{};
 #endif // TENSORFLOW_USE_SYCL
 #endif // EIGEN_HAS_INDEX_LIST
 
@@ -250,38 +245,29 @@ class ReductionOp : public OpKernel {
 
 namespace functor {
 
-template <typename Reducer>
-struct ReduceFunctor<CPUDevice, Reducer> {
+template <typename Device, typename Reducer>
+struct ReduceFunctorBase {
   template <typename OUT_T, typename IN_T, typename ReductionAxes>
-  static void Reduce(const CPUDevice& d, OUT_T out, IN_T in,
+  static void Reduce(const Device& d, OUT_T out, IN_T in,
                      const ReductionAxes& reduction_axes,
                      const Reducer& reducer) {
     ReduceEigenImpl(d, out, in, reduction_axes, reducer);
   }
 
   template <typename OUT_T>
-  static void FillIdentity(const CPUDevice& d, OUT_T out,
+  static void FillIdentity(const Device& d, OUT_T out,
                            const Reducer& reducer) {
     FillIdentityEigenImpl(d, out, reducer);
   }
 };
 
-#ifdef TENSORFLOW_USE_SYCL
 template <typename Reducer>
-struct ReduceFunctor<SYCLDevice, Reducer> {
-  template <typename OUT_T, typename IN_T, typename ReductionAxes>
-  static void Reduce(const SYCLDevice& d, OUT_T out, IN_T in,
-                     const ReductionAxes& reduction_axes,
-                     const Reducer& reducer) {
-    ReduceEigenImpl(d, out, in, reduction_axes, reducer);
-  }
-
-  template <typename OUT_T>
-  static void FillIdentity(const SYCLDevice& d, OUT_T out,
-                           const Reducer& reducer) {
-    FillIdentityEigenImpl(d, out, reducer);
-  }
-};
+struct ReduceFunctor<CPUDevice, Reducer>
+        : ReduceFunctorBase<CPUDevice, Reducer>{};
+#if TENSORFLOW_USE_SYCL
+template <typename Reducer>
+struct ReduceFunctor<SYCLDevice, Reducer>
+        : ReduceFunctorBase<SYCLDevice, Reducer>{};
 #endif // TENSORFLOW_USE_SYCL
 
 }  // namespace functor
