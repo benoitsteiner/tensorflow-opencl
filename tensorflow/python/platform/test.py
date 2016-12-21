@@ -137,15 +137,6 @@ def is_gpu_available(cuda_only=False):
     return any((x.device_type == 'GPU' or x.device_type == 'SYCL')
                for x in _device_lib.list_local_devices())
 
-
-def gpu_device_name():
-  """Returns the name of a GPU device if available or the empty string."""
-  for x in _device_lib.list_local_devices():
-    if x.device_type == 'GPU' or x.device_type == 'SYCL':
-      return x.name
-  return ''
-
-
 _allowed_symbols = [
     # We piggy-back googletest documentation.
     'Benchmark',
