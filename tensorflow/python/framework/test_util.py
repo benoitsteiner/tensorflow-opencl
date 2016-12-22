@@ -43,11 +43,11 @@ from tensorflow.python.platform import googletest
 from tensorflow.python.platform import tf_logging as logging
 from tensorflow.python.util import compat
 from tensorflow.python.util.protobuf import compare
-from tensorflow.python.client import device_lib as _device_lib
+from tensorflow.python.client import device_lib
 
 def gpu_device_name():
   """Returns the name of a GPU device if available or the empty string."""
-  for x in _device_lib.list_local_devices():
+  for x in device_lib.list_local_devices():
     if x.device_type == 'GPU' or x.device_type == 'SYCL':
       return x.name
   return ''
