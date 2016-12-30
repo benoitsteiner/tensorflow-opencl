@@ -22,13 +22,16 @@ REGISTER3(BinaryOp, CPU, "FloorDiv", functor::floor_div_real, float,
           Eigen::half, double);
 
 #if TENSORFLOW_USE_SYCL
+// TODO(lukeiwanski): Figure out how to deal with OpenCL precision that combined
+// with floor is casuing big missmatches.
 #define REGISTER_SYCL_KERNEL(TYPE)                                    \
   REGISTER_KERNEL_BUILDER(                                            \
                           Name("FloorDiv")                            \
                           .Device(DEVICE_SYCL)                        \
                           .TypeConstraint<TYPE>("T"),                 \
-                          BinaryOp<SYCLDevice, functor::floor_div_real<TYPE>>);
+                          BinaryOp<CPUDevice, functor::floor_div_real<TYPE>>);
 REGISTER_SYCL_KERNEL(float)
+REGISTER_SYCL_KERNEL(double)
 #undef REGISTER_SYCL_KERNEL
 #endif // TENSORFLOW_USE_SYCL
 
