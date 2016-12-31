@@ -273,43 +273,4 @@ REGISTER_KERNEL_BUILDER(Name("ReverseV2")
                         ReverseV2Op<CPUDevice, int32>);
 #endif  // GOOGLE_CUDA
 
-#ifdef TENSORFLOW_USE_SYCL
-// Registration of the SYCL implementations.
-// TODO(lukeiwanski): Register for SYCLDevice once implemented in Eigen
-#define REGISTER_SYCL_KERNELS(T)                             \
-  REGISTER_KERNEL_BUILDER(Name("Reverse")                    \
-                              .Device(DEVICE_SYCL)           \
-                              .TypeConstraint<T>("T")        \
-                              .HostMemory("dims"),           \
-                          ReverseOp<CPUDevice, T>)           \
-  REGISTER_KERNEL_BUILDER(Name("ReverseV2")                  \
-                              .Device(DEVICE_SYCL)           \
-                              .TypeConstraint<T>("T")        \
-                              .TypeConstraint<int32>("Tidx") \
-                              .HostMemory("axis"),           \
-                          ReverseV2Op<CPUDevice, T>)
-TF_CALL_float(REGISTER_SYCL_KERNELS);
-TF_CALL_double(REGISTER_SYCL_KERNELS);
-#undef REGISTER_SYCL_KERNEL
-
-// A special GPU kernel for int32.
-// TODO(b/25387198): Also enable int32 in device memory. This kernel
-// registration requires all int32 inputs and outputs to be in host memory.
-REGISTER_KERNEL_BUILDER(Name("Reverse")
-                            .Device(DEVICE_SYCL)
-                            .TypeConstraint<int32>("T")
-                            .HostMemory("tensor")
-                            .HostMemory("dims")
-                            .HostMemory("output"),
-                        ReverseOp<CPUDevice, int32>);
-REGISTER_KERNEL_BUILDER(Name("ReverseV2")
-                            .Device(DEVICE_SYCL)
-                            .TypeConstraint<int32>("T")
-                            .TypeConstraint<int32>("Tidx")
-                            .HostMemory("tensor")
-                            .HostMemory("axis")
-                            .HostMemory("output"),
-                        ReverseV2Op<CPUDevice, int32>);
-#endif // TENSORFLOW_USE_SYCL
-
 }  // namespace tensorflow
