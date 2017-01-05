@@ -26,7 +26,7 @@ def main():
 
   if(output_file_index == 1):
     # we are linking
-    return subprocess.call([CPU_CXX_COMPILER] + compiler_flags)
+    return subprocess.call([CPU_CXX_COMPILER] + compiler_flags + ['-Wl,--no-undefined'])
 
   compiler_flags = compiler_flags + ['-D_GLIBCXX_USE_CXX11_ABI=0', '-DEIGEN_USE_SYCL=1']
 
