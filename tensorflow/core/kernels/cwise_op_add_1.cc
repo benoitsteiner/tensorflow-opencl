@@ -28,6 +28,7 @@ REGISTER5(BinaryOp, CPU, "Add", functor::add, float, Eigen::half, double, int32,
                           BinaryOp<SYCLDevice, functor::add<TYPE>>);
   REGISTER_SYCL_KERNEL(float);
   REGISTER_SYCL_KERNEL(double);
+  REGISTER_SYCL_KERNEL(int32);
 #undef REGISTER_SYCL_KERNEL
 #endif // TENSORFLOW_USE_SYCL
 

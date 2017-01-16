@@ -337,6 +337,6 @@ TF_CALL_half(REGISTER_GPU);
                               .Label("eigen"),                      \
                           MatMulOp<SYCLDevice, T, false /* xxblas */>)
 TF_CALL_float(REGISTER_SYCL);
-TF_CALL_double(REGISTER_SYCL);
+
 #endif // TENSORFLOW_USE_SYCL
 }  // namespace tensorflow
