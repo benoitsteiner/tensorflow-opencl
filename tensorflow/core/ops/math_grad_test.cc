@@ -968,6 +968,8 @@ TEST_F(MathGradTest, Sum_dim1) {
                                  test::AsTensor<int32>({0}, TensorShape({})));
 }
 
+// TODO{lukeiwanski}: Enable once MeanReducer for SYCL implemented in Eigen
+#ifndef TENSORFLOW_USE_SYCL
 TEST_F(MathGradTest, Mean_dim0) {
   auto x = test::AsTensor<float>({-3.f, -2.f, -1.f, 1.f, 2.f, 3.f},
                                  TensorShape({2, 3}));
@@ -1012,6 +1014,7 @@ TEST_F(MathGradTest, Mean_dim0_dim1) {
   test::ExpectTensorEqual<int32>(
       di, test::AsTensor<int32>({0, 0}, TensorShape({2})));
 }
+#endif
 
 TEST_F(MathGradTest, Min_dim0) {
   auto x = test::AsTensor<float>({-3.f, -2.f, -1.f, 1.f, 2.f, 3.f},
