@@ -770,11 +770,12 @@ def _AggregatedGrads(grads, op, loop_state, aggregation_method=None):
         # Form IndexedSlices out of the concatenated values and
         # indices.
         out_grads[i] = ops.IndexedSlices(
-            array_ops.concat_v2([x.values for x in out_grad], 0),
-            array_ops.concat_v2([x.indices for x in out_grad], 0),
+            array_ops.concat([x.values for x in out_grad], 0),
+            array_ops.concat([x.indices for x in out_grad], 0),
             out_grad[0].dense_shape)
-    else:
-      out_grads[i] = []
+    else:  # not out_grad
+      # out_grads[i] is [], thus its aggregation is simply None.
+      out_grads[i] = None
   return out_grads
 
 
@@ -823,7 +824,7 @@ def _hessian_vector_product(ys, xs, v):
 
   assert len(grads) == length
   elemwise_products = [
-      math_ops.mul(grad_elem, array_ops.stop_gradient(v_elem))
+      math_ops.multiply(grad_elem, array_ops.stop_gradient(v_elem))
       for grad_elem, v_elem in zip(grads, v) if grad_elem is not None
   ]
 

@@ -57,6 +57,8 @@
 * tf.image.decode_jpeg by default uses the faster DCT method, sacrificing
   a little fidelity for improved speed. One can revert to the old
   behavior by specifying the attribute dct_method='INTEGER_ACCURATE'.
+* `tf.complex_abs` has been removed from the Python interface. `tf.abs`
+  supports complex tensors and should be used instead.
 
 # Release 0.12.0
 
@@ -137,6 +139,9 @@
 * `tf.all_variables`, `tf.VARIABLES` and `tf.initialize_all_variables` renamed
   to `tf.global_variables`, `tf.GLOBAL_VARIABLES` and
   `tf.global_variables_initializer` respectively.
+* `tf.zeros_initializer()` and `tf.ones_initializer()` now return a callable
+  that must be called with initializer arguments, in your code replace
+  tf.zeros_initializer with tf.zeros_initializer()
 
 ## Bug Fixes and Other Changes
 
