@@ -31,6 +31,8 @@ from tensorflow.python.framework import test_util
 from tensorflow.python.framework.constant_op import constant
 from tensorflow.python.ops import array_grad  # pylint: disable=unused-import
 from tensorflow.python.ops import array_ops
+from tensorflow.python.ops import control_flow_grad  # pylint: disable=unused-import
+from tensorflow.python.ops import control_flow_ops
 from tensorflow.python.ops import data_flow_grad  # pylint: disable=unused-import
 from tensorflow.python.ops import data_flow_ops  # pylint: disable=unused-import
 from tensorflow.python.ops import functional_ops  # pylint: disable=unused-import
@@ -40,6 +42,8 @@ from tensorflow.python.ops import math_grad  # pylint: disable=unused-import
 from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import nn_grad  # pylint: disable=unused-import
 from tensorflow.python.ops import state_grad  # pylint: disable=unused-import
+from tensorflow.python.ops import tensor_array_grad  # pylint: disable=unused-import
+from tensorflow.python.ops import tensor_array_ops
 from tensorflow.python.ops.nn_ops import bias_add
 from tensorflow.python.platform import googletest
 
@@ -108,9 +112,9 @@ class GradientsTest(test_util.TensorFlowTestCase):
       t2 = constant(2.0)
       t3 = array_ops.stack([t1, t2])
       t4 = constant([1.0])
-      t5 = array_ops.concat_v2([t4, t3], 0)
+      t5 = array_ops.concat([t4, t3], 0)
       t6 = constant([2.0])
-      t7 = array_ops.concat_v2([t5, t6], 0)
+      t7 = array_ops.concat([t5, t6], 0)
     self._assertOpListEqual([t7.op, t5.op, t4.op],
                             _OpsBetween(g, [t7.op], [t4.op]))
 
@@ -119,10 +123,10 @@ class GradientsTest(test_util.TensorFlowTestCase):
       t1 = constant(1.0)
       t2 = constant(2.0)
       t3 = array_ops.stack([t1, t2])
-      t4 = array_ops.concat_v2([t3, t3, t3], 0)
+      t4 = array_ops.concat([t3, t3, t3], 0)
       t5 = constant([1.0])
-      t6 = array_ops.concat_v2([t4, t5], 0)
-      t7 = array_ops.concat_v2([t6, t3], 0)
+      t6 = array_ops.concat([t4, t5], 0)
+      t7 = array_ops.concat([t6, t3], 0)
     self._assertOpListEqual([t6.op, t4.op, t3.op],
                             _OpsBetween(g, [t6.op], [t3.op]))
     self._assertOpListEqual([t7.op, t6.op, t5.op, t4.op, t3.op, t1.op],
@@ -202,7 +206,7 @@ class GradientsTest(test_util.TensorFlowTestCase):
     # Test that we don't differentiate 'x'. The gradient function for 'x' is
     # set explicitly to None so we will get an exception if the gradient code
     # tries to differentiate 'x'.
-    with ops.Graph().as_default() as g:
+    with ops.Graph().as_default():
       c = constant(1.0)
       x = array_ops.identity(c)
       y = x + 1.0
@@ -289,6 +293,23 @@ class GradientsTest(test_util.TensorFlowTestCase):
       # A previous version of the code did this only for tf.Tensor, not
       # tf.IndexedSlices.
       self.assertEqual(dx, dy)
+
+  def testNonDifferentiableSwitchInWhileLoop(self):
+    with ops.Graph().as_default():
+      v = array_ops.placeholder(dtypes.float32, [])
+
+      def _Step(i, a, ta):
+        a += math_ops.cast(v, dtypes.int32)
+        return (i + 1, a, ta.write(i, a))
+
+      n = 4
+      i, _, ta = control_flow_ops.while_loop(
+          lambda i, *_: i < n,
+          _Step, [0, 0, tensor_array_ops.TensorArray(
+              dtypes.int32, size=n)])
+      target = ta.read(i - 1)
+      grad, = gradients.gradients(target, v)
+      self.assertIsNone(grad)
 
 
 class FunctionGradientsTest(test_util.TensorFlowTestCase):
@@ -390,6 +411,16 @@ class StopGradientTest(test_util.TensorFlowTestCase):
     assert igrad is None
 
 
+class PreventGradientTest(test_util.TensorFlowTestCase):
+
+  def testPreventGradient(self):
+    with ops.Graph().as_default():
+      inp = constant(1.0, shape=[100, 32], name="in")
+      out = array_ops.prevent_gradient(inp)
+      with self.assertRaisesRegexp(LookupError, "No gradient defined"):
+        _ = gradients.gradients(out, inp)
+
+
 class HessianVectorProductTest(test_util.TensorFlowTestCase):
 
   def testHessianVectorProduct(self):
@@ -422,7 +453,7 @@ class HessianTest(test_util.TensorFlowTestCase):
 
   def testHessian1D(self):
     # Manually compute the Hessian explicitly for a low-dimensional problem
-    # and check that `hessian` matches. Specifically, the Hessian of 
+    # and check that `hessian` matches. Specifically, the Hessian of
     # f(x) = x^T A x is H = A + A^T.
     m = 4
     rng = np.random.RandomState([1, 2, 3])
@@ -474,7 +505,7 @@ class IndexedSlicesToTensorTest(test_util.TensorFlowTestCase):
       c = constant_op.constant(np_val)
       c_sparse = math_ops._as_indexed_slices(c)
       self.assertAllEqual(np_val.shape, c_sparse.dense_shape.eval())
-      c_dense = math_ops.mul(c_sparse, 1.0)
+      c_dense = math_ops.multiply(c_sparse, 1.0)
       self.assertAllClose(np_val, c_dense.eval())
 
   def testIndexedSlicesToTensorList(self):
@@ -502,7 +533,7 @@ class IndexedSlicesToTensorTest(test_util.TensorFlowTestCase):
           c_sparse.values,
           math_ops.cast(c_sparse.indices, dtypes.int64), c_sparse.dense_shape)
       self.assertAllEqual(np_val.shape, c_sparse.dense_shape.eval())
-      c_dense = math_ops.mul(c_sparse, 1.0)
+      c_dense = math_ops.multiply(c_sparse, 1.0)
       self.assertAllClose(np_val, c_dense.eval())
 
   def testWarnings(self):
@@ -511,7 +542,7 @@ class IndexedSlicesToTensorTest(test_util.TensorFlowTestCase):
         array_ops.placeholder(dtypes.float32),
         array_ops.placeholder(dtypes.int32), constant([4, 4, 4, 4]))
     with warnings.catch_warnings(record=True) as w:
-      math_ops.mul(c_sparse, 1.0)
+      math_ops.multiply(c_sparse, 1.0)
     self.assertEqual(0, len(w))
 
     # Greater than or equal to the threshold: warning.
@@ -519,7 +550,7 @@ class IndexedSlicesToTensorTest(test_util.TensorFlowTestCase):
         array_ops.placeholder(dtypes.float32),
         array_ops.placeholder(dtypes.int32), constant([100, 100, 100, 100]))
     with warnings.catch_warnings(record=True) as w:
-      math_ops.mul(c_sparse, 1.0)
+      math_ops.multiply(c_sparse, 1.0)
     self.assertEqual(1, len(w))
     self.assertTrue(
         "with 100000000 elements. This may consume a large amount of memory." in
@@ -531,7 +562,7 @@ class IndexedSlicesToTensorTest(test_util.TensorFlowTestCase):
         array_ops.placeholder(dtypes.int32),
         array_ops.placeholder(dtypes.int32))
     with warnings.catch_warnings(record=True) as w:
-      math_ops.mul(c_sparse, 1.0)
+      math_ops.multiply(c_sparse, 1.0)
     self.assertEqual(1, len(w))
     self.assertTrue(
         "of unknown shape. This may consume a large amount of memory." in

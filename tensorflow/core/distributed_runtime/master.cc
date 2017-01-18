@@ -355,8 +355,8 @@ void Master::PartialRunSetup(const PartialRunSetupRequest* req,
   });
 }
 
-void Master::RunStep(CallOptions* opts, const RunStepRequest* req,
-                     RunStepResponse* resp, MyClosure done) {
+void Master::RunStep(CallOptions* opts, const RunStepRequestWrapper* req,
+                     MutableRunStepResponseWrapper* resp, MyClosure done) {
   mu_.lock();
   uint64 start_time = env_->env->NowMicros();
   MasterSession* session = gtl::FindPtrOrNull(sessions_, req->session_handle());
@@ -369,7 +369,7 @@ void Master::RunStep(CallOptions* opts, const RunStepRequest* req,
   mu_.unlock();
 
   SchedClosure([this, start_time, session, opts, req, resp, done]() {
-    Status status = session->Run(opts, req, resp);
+    Status status = session->Run(opts, *req, resp);
     session->Unref();
     uint64 done_time = env_->env->NowMicros();
     done(status);
@@ -437,13 +437,15 @@ void Master::CleanupWorkers(const ResetRequest& reset) {
     std::vector<CleanupAllResponse> resp(num_workers);
     int c = 0;
     for (int i = 0; i < num_workers; ++i) {
-      auto worker = env_->worker_cache->CreateWorker(worker_names[i]);
+      const string& worker_name = worker_names[i];
+      auto worker = env_->worker_cache->CreateWorker(worker_name);
       if (worker) {
-        worker->CleanupAllAsync(&req, &resp[i], [&n, worker, c](Status s) {
-          TF_CHECK_OK(s);
-          delete worker;
-          n[c].Notify();
-        });
+        worker->CleanupAllAsync(
+            &req, &resp[i], [this, &n, worker_name, worker, c](Status s) {
+              TF_CHECK_OK(s);
+              env_->worker_cache->ReleaseWorker(worker_name, worker);
+              n[c].Notify();
+            });
       } else {
         n[c].Notify();
       }

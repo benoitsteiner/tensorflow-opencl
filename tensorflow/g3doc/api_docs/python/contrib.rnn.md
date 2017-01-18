@@ -31,7 +31,7 @@ LSTM (Long Short Term Memory) or GRU (Gated Recurrent Unit), and a number
 of operators that allow add dropouts, projections, or embeddings for inputs.
 Constructing multi-layer cells is supported by the class `MultiRNNCell`,
 or by calling the `rnn` ops several times. Every `RNNCell` must have the
-properties below and and implement `__call__` with the following signature.
+properties below and implement `__call__` with the following signature.
 - - -
 
 #### `tf.contrib.rnn.RNNCell.__call__(inputs, state, scope=None)` {#RNNCell.__call__}
@@ -862,9 +862,9 @@ The implementation is based on: http://arxiv.org/abs/1409.2329.
 We add `forget_bias` (default: 1) to the biases of the forget gate in order to
 reduce the scale of forgetting in the beginning of the training.
 
-Unlike `rnn_cell.LSTMCell`, this is a monolithic op and should be much faster.
-The weight and bias matrixes should be compatible as long as the variable
-scope matches.
+Unlike `core_rnn_cell.LSTMCell`, this is a monolithic op and should be much
+faster.  The weight and bias matrixes should be compatible as long as the
+variable scope matches.
 - - -
 
 #### `tf.contrib.rnn.LSTMBlockCell.__call__(x, states_prev, scope=None)` {#LSTMBlockCell.__call__}
@@ -1137,7 +1137,7 @@ The implementation is based on: http://arxiv.org/abs/1409.2329.
 We add forget_bias (default: 1) to the biases of the forget gate in order to
 reduce the scale of forgetting in the beginning of the training.
 
-The variable naming is consistent with `rnn_cell.LSTMCell`.
+The variable naming is consistent with `core_rnn_cell.LSTMCell`.
 - - -
 
 #### `tf.contrib.rnn.LSTMBlockFusedCell.__call__(inputs, initial_state=None, dtype=None, sequence_length=None, scope=None)` {#LSTMBlockFusedCell.__call__}
