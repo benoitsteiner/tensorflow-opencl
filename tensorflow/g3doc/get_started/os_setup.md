@@ -684,11 +684,11 @@ website](https://www.codeplay.com/products/computesuite/computecpp), uncompress
 and copy the files into e.g. `/usr/local/computecpp`:
 
 ```bash
-tar -xvzf ComputeCpp-CE-0.1.1-Ubuntu.14.04-64bit.tar.gz
+tar -xvzf ComputeCpp-CE-0.1.2-Ubuntu.14.04-64bit.tar.gz
 sudo mkdir /usr/local/computecpp
-sudo cp -R ComputeCpp-CE-0.1.1-Linux /usr/local/computecpp
+sudo cp -R ComputeCpp-CE-0.1.2-Linux /usr/local/computecpp
 sudo chmod -R a+r /usr/local/computecpp/
-sudo chmod -R a+x /usr/local/computecpp/bin
+sudo chmod -R a+x /usr/local/computecpp/ComputeCpp-CE-0.1.2-Linux/bin
 ```
 
 ### Prepare environment for Mac OS X
