@@ -224,7 +224,7 @@ Status TransposeSyclOp::DoTranspose(OpKernelContext* ctx, const Tensor& in,
                               .TypeConstraint<int32>("Tperm") \
                               .HostMemory("perm"),            \
                           TransposeSyclOp);
-REGISTER(float);
+TF_CALL_POD_TYPES(REGISTER);
 #undef REGISTER
 #endif
 
