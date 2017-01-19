@@ -275,7 +275,7 @@ struct MatMulFunctor<CPUDevice, T> {
 };
 
 #ifdef TENSORFLOW_USE_SYCL
-// Partial specialization MatMulFunctor<Device=CPUDevice, T>.
+// Partial specialization MatMulFunctor<Device=SYCLDevice, T>.
 template <typename T>
 struct MatMulFunctor<SYCLDevice, T> {
   void operator()(
