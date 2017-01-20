@@ -171,4 +171,3 @@ GetSyclCastFromDouble(DataType dst_dtype);
 }  // namespace tensorflow
 
 #endif  // THIRD_PARTY_TENSORFLOW_CORE_KERNELS_CAST_OP_IMPL_H_
-

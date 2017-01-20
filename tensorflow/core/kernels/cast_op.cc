@@ -268,4 +268,3 @@ REGISTER_KERNEL_BUILDER(
     CpuCastOp);
 #endif // TENSORFLOW_USE_SYCL
 }  // end namespace tensorflow
-
