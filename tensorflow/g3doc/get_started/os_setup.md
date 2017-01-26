@@ -691,6 +691,12 @@ sudo chmod -R a+r /usr/local/computecpp/
 sudo chmod -R a+x /usr/local/computecpp/bin
 ```
 
+Add the lib folder to your `LD_LIBRARY_PATH` to make Python find `libComputeCpp.so` by adding the following line to your `~/.bash_profile`:
+
+```bash
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/computecpp/lib"
+```
+
 ### Prepare environment for Mac OS X
 
 We recommend using [homebrew](http://brew.sh) to install the bazel dependency,
