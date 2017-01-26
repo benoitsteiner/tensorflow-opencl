@@ -1278,3 +1278,8 @@ directory, and so tries to import directly from the source code instead of
 your installed tensorflow package.  Solution: don't import tensorflow
 from the tensorflow source code root directory, if you are.
 
+```
+ImportError: libComputeCpp.so: cannot open shared object file: No such file or directory
+```
+
+Make sure you have added the path to ComputeCpp's `lib` folder to your `LD_LIBRARY_PATH` (as mentioned above).
