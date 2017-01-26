@@ -1261,6 +1261,12 @@ When importing tensorflow, you may see an "ImportError" raised.  Below
 are some possible examples and solutions:
 
 ```
+ImportError: cannot import name 'pywrap_tensorflow'
+```
+
+This can occur if you try to import tensorflow while your current working directory is in the same directory as TensorFlow is located. If that is the case, change the working directory (i.e. `cd` in bash or `os.chdir` in python) to some folder outside of the TensorFlow directory and try importing tensorflow again.
+
+```
 ImportError: /lib64/libc.so.6: version `GLIBC_2.16' not found (required by ..._pywrap_tensorflow.so)
 ```
 
