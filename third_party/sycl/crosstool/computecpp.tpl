@@ -40,7 +40,7 @@ def main():
 
   if(compiling_cpp == 1):
       # create a blacklist of folders that will be skipped when compiling with ComputeCpp
-      _skip = ["external", "llvm"]
+      _skip = ["external", "llvm", ".cu.cc"]
       # if compiling external project skip computecpp
       if any(_folder in _skip for _folder in output_file_name):
         return subprocess.call([CPU_CXX_COMPILER] + compiler_flags)
