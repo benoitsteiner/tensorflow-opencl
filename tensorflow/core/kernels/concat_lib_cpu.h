@@ -149,7 +149,7 @@ void ConcatSYCLImpl(
   for (int64 i = 0; i < dim0; ++i) {
     for (int64 j = 0; j < num_inputs; ++j) {
       auto size = sizes[j];
-      d.memcpy(out, inp[j], size);
+      d.memcpy(out, inp[j], size * sizeof(T));
       out += size;
       inp[j] += size;
     }
