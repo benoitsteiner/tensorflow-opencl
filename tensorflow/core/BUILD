@@ -111,6 +111,7 @@ load(
     "//tensorflow/core:platform/default/build_config_root.bzl",
     "tf_cuda_tests_tags",
 )
+load("@local_config_sycl//sycl:build_defs.bzl", "if_sycl")
 
 # -----------------------------------------------------------------------------
 # Public targets
@@ -712,7 +713,7 @@ cc_library(
         "//tensorflow/core/kernels:ops_testutil",
         "//tensorflow/core/kernels:ops_util",
         "//tensorflow/core/platform/default/build_config:gtest",
-    ],
+    ] + if_sycl([":sycl_runtime"]),
 )
 
 # This is a link-only library to provide a DirectSession
