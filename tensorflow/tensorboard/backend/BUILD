@@ -7,6 +7,8 @@ licenses(["notice"])  # Apache 2.0
 
 exports_files(["LICENSE"])
 
+load("//tensorflow:tensorflow.bzl", "py_test")
+
 py_library(
     name = "application",
     srcs = ["application.py"],
@@ -16,7 +18,6 @@ py_library(
         ":process_graph",
         "//tensorflow/python:platform",
         "//tensorflow/python:summary",
-        "//tensorflow/tensorboard:projector",
         "//tensorflow/tensorboard/lib/python:http_util",
         "@org_pocoo_werkzeug//:werkzeug",
         "@six_archive//:six",
@@ -25,7 +26,7 @@ py_library(
 
 py_test(
     name = "application_test",
-    size = "small",
+    size = "medium",
     srcs = ["application_test.py"],
     srcs_version = "PY2AND3",
     deps = [

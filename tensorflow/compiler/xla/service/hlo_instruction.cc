@@ -1447,10 +1447,12 @@ string HloInstruction::ToString(bool compact_operands) const {
 string HloInstruction::ToShortString() const {
   return tensorflow::strings::Printf(
       "%s = %s(%s)", name().c_str(), HloOpcodeString(opcode()).c_str(),
-      tensorflow::str_util::Join(operands_, ", ", [](string* out,
-                                                     HloInstruction* operand) {
-        tensorflow::strings::StrAppend(out, operand->name());
-      }).c_str());
+      tensorflow::str_util::Join(operands_, ", ",
+                                 [](string* out, HloInstruction* operand) {
+                                   tensorflow::strings::StrAppend(
+                                       out, operand->name());
+                                 })
+          .c_str());
 }
 
 string HloInstruction::ToCategory() const {
@@ -1496,6 +1498,15 @@ string HloInstruction::ToCategory() const {
   return HloOpcodeString(opcode());
 }
 
+string HloInstruction::FullyQualifiedName() const {
+  if (IsFused()) {
+    return tensorflow::strings::StrCat(fusion_instruction()->parent()->name(),
+                                       "::", fusion_instruction()->name(),
+                                       "::", name_);
+  }
+  return tensorflow::strings::StrCat(parent_->name(), "::", name_);
+}
+
 HloInstruction* HloInstruction::tracing() const { return trace_instruction_; }
 
 void HloInstruction::set_tracing(HloInstruction* trace_instruction) {
@@ -1528,6 +1539,10 @@ bool HloInstruction::IsFusable() const {
     case HloOpcode::kSend:
     case HloOpcode::kRecv:
       return false;
+    // Only fuse Rng if it is used once, otherwise the random numbers generated
+    // will be different in each fusion.
+    case HloOpcode::kRng:
+      return users_.size() == 1;
     default:
       return true;
   }
@@ -1879,6 +1894,7 @@ bool HloInstruction::IsElementwise() const {
       return true;
 
     // Other operations.
+    case HloOpcode::kRng:
     case HloOpcode::kMap:
       return true;
     case HloOpcode::kFusion:

@@ -1511,6 +1511,7 @@ REGISTER_OP("PreventGradient")
     .Input("input: T")
     .Output("output: T")
     .Attr("T: type")
+    .Attr("message: string = ''")
     .SetShapeFn(shape_inference::UnchangedShape)
     .Doc(R"Doc(
 An identity op that triggers an error if a gradient is requested.
@@ -1522,6 +1523,11 @@ will return an error when trying to lookup the gradient of this op,
 because no gradient must ever be registered for this function.  This
 op exists to prevent subtle bugs from silently returning unimplemented
 gradients in some corner cases.
+
+input: any tensor.
+output: the same input tensor.
+message: Will be printed in the error when anyone tries to differentiate
+this operation.
 )Doc");
 
 // --------------------------------------------------------------------------
@@ -4905,9 +4911,8 @@ REGISTER_OP("FakeQuantWithMinMaxVars")
       return Status::OK();
     })
     .Doc(R"doc(
-Fake-quantize the 'inputs' tensor of type float and shape `[b, h, w, d]` via
-global float scalars `min` and `max` to 'outputs' tensor of same shape as
-`inputs`.
+Fake-quantize the 'inputs' tensor of type float via global float scalars `min`
+and `max` to 'outputs' tensor of same shape as `inputs`.
 
 [min; max] is the clamping range for the 'inputs' data.  Op divides this range
 into 255 steps (total of 256 values), then replaces each 'inputs' value with the

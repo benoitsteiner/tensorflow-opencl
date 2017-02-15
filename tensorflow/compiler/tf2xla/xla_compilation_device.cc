@@ -44,10 +44,9 @@ class XlaCompilationAllocator : public Allocator {
   string Name() override { return "tla_jit"; }
 
   void* AllocateRaw(size_t alignment, size_t num_bytes) override {
-    // Regardless of the size requested, always allocate a
-    // XlaExpression. Respect the aligment request because there is
-    // alignment checking even for Tensors whose data is never
-    // accessed.
+    // Regardless of the size requested, always allocates an XlaExpression.
+    // Respects the aligment request because there is alignment checking even
+    // for Tensors whose data is never accessed.
     void* p = port::AlignedMalloc(sizeof(XlaExpression), alignment);
     XlaExpression* expression = reinterpret_cast<XlaExpression*>(p);
     new (expression) XlaExpression();
@@ -113,18 +112,21 @@ XlaOpRegistry::XlaOpRegistry() = default;
 XlaOpRegistry::~XlaOpRegistry() = default;
 
 /* static */ void XlaOpRegistry::RegisterJitDevice(
-    const string& device_name, const string& jit_device_name,
-    bool requires_jit) {
+    const string& device_name, const string& jit_device_name, bool requires_jit,
+    bool enable_jit_by_default) {
   XlaOpRegistry& registry = Instance();
   mutex_lock lock(registry.mutex_);
   auto result = registry.jit_devices_.emplace(
-      device_name, std::make_pair(jit_device_name, requires_jit));
-  CHECK(result.second || result.first->second.first == jit_device_name);
+      device_name,
+      JitDevice{jit_device_name, requires_jit, enable_jit_by_default});
+  CHECK(result.second ||
+        result.first->second.jit_device_name == jit_device_name);
 }
 
 /* static */ bool XlaOpRegistry::GetJitDevice(const string& device_name,
                                               const string** jit_device_name,
-                                              bool* requires_jit) {
+                                              bool* requires_jit,
+                                              bool* enable_jit_by_default) {
   XlaOpRegistry& registry = Instance();
 
   // Lazily register the CPU and GPU JIT devices the first time GetJitDevice is
@@ -132,10 +134,10 @@ XlaOpRegistry::~XlaOpRegistry() = default;
   static void* registration = [&registry]() {
     mutex_lock lock(registry.mutex_);
     if (IsPlatformSupported(perftools::gputools::host::kHostPlatformId)) {
-      registry.jit_devices_[DEVICE_CPU] = {DEVICE_CPU_XLA_JIT, false};
+      registry.jit_devices_[DEVICE_CPU] = {DEVICE_CPU_XLA_JIT, false, false};
     }
     if (IsPlatformSupported(perftools::gputools::cuda::kCudaPlatformId)) {
-      registry.jit_devices_[DEVICE_GPU] = {DEVICE_GPU_XLA_JIT, false};
+      registry.jit_devices_[DEVICE_GPU] = {DEVICE_GPU_XLA_JIT, false, true};
     }
     return nullptr;
   }();
@@ -144,8 +146,11 @@ XlaOpRegistry::~XlaOpRegistry() = default;
   mutex_lock lock(registry.mutex_);
   auto it = registry.jit_devices_.find(device_name);
   if (it == registry.jit_devices_.end()) return false;
-  if (jit_device_name) *jit_device_name = &it->second.first;
-  if (requires_jit) *requires_jit = it->second.second;
+  if (jit_device_name) *jit_device_name = &it->second.jit_device_name;
+  if (requires_jit) *requires_jit = it->second.requires_jit;
+  if (enable_jit_by_default) {
+    *enable_jit_by_default = it->second.enable_jit_by_default;
+  }
   return true;
 }
 
@@ -159,8 +164,8 @@ void XlaOpRegistry::RegisterJitKernels() {
   for (const auto& entry : registry.kernels_) {
     for (const XlaKernel& k : entry.second) {
       auto it = registry.ops_.find(k.kernel_def->op());
-      CHECK(it != registry.ops_.end()) << "Missing XLA op registration for op "
-                                       << k.kernel_def->op();
+      CHECK(it != registry.ops_.end())
+          << "Missing XLA op registration for op " << k.kernel_def->op();
       registry.kernel_registrars_.emplace_back(
           new kernel_factory::OpKernelRegistrar(new KernelDef(*k.kernel_def),
                                                 "XlaJitOp", it->second));

@@ -13,10 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 
-"""## Control Flow Operations
-
-TensorFlow provides several operations and classes that you can use to control
-the execution of operations and add conditional dependencies to your graph.
+"""Control Flow Operations. See the @{python/control_flow_ops} guide.
 
 @@identity
 @@tuple
@@ -26,22 +23,10 @@ the execution of operations and add conditional dependencies to your graph.
 @@cond
 @@case
 @@while_loop
-
-## Logical Operators
-
-TensorFlow provides several operations that you can use to add logical operators
-to your graph.
-
 @@logical_and
 @@logical_not
 @@logical_or
 @@logical_xor
-
-## Comparison Operators
-
-TensorFlow provides several operations that you can use to add comparison
-operators to your graph.
-
 @@equal
 @@not_equal
 @@less
@@ -49,12 +34,6 @@ operators to your graph.
 @@greater
 @@greater_equal
 @@where
-
-## Debugging Operations
-
-TensorFlow provides several operations that you can use to validate values and
-debug your graph.
-
 @@is_finite
 @@is_inf
 @@is_nan
@@ -1794,6 +1773,15 @@ def cond(pred, fn1, fn2, name=None):
     return merges[0] if len(merges) == 1 else merges
 
 
+def _resource_safe_shape(t):
+  """Returns the shape of t or the variable it points to."""
+  if t.dtype == dtypes.resource:
+    while t.op.inputs:
+      t = t.op.inputs[0]
+    return tensor_shape.TensorShape(t.op.get_attr("shape"))
+  return array_ops.shape_internal(t, optimize=False)
+
+
 # TODO(yuanbyu): Consider having a unified notion of context for
 # not only conditionals and loops but also control dependency and
 # subgraphs.
@@ -2284,7 +2272,7 @@ class WhileContext(ControlFlowContext):
                                         name="b_acc")
       if self.outer_context: self.outer_context.Exit()
     else:
-      values_shape = array_ops.shape_internal(op.inputs[0], optimize=False)[1:]
+      values_shape = _resource_safe_shape(op.inputs[0])[1:]
       values_shape = array_ops.concat([[1], values_shape], 0)
       values_acc = array_ops.zeros(values_shape, dtype=values.dtype)
     indices_acc = constant_op.constant([0], indices.dtype)
@@ -2525,7 +2513,7 @@ def while_loop(cond, body, loop_vars, shape_invariants=None,
   `loop_vars` is the same in every iteration. The `shape_invariants` argument
   allows the caller to specify a less specific shape invariant for each loop
   variable, which is needed if the shape varies between iterations. The
-  [`Tensor.set_shape()`](../../api_docs/python/framework.md#Tensor.set_shape)
+  @{tf.Tensor.set_shape}
   function may also be used in the `body` function to indicate that
   the output loop variable has a particular shape. The shape invariant for
   SparseTensor and IndexedSlices are treated specially as follows:

@@ -84,7 +84,7 @@ cuda_py_test(
 
 tf_cuda_cc_test(
     name = "nccl_manager_test",
-    size = "small",
+    size = "medium",
     srcs = if_cuda(
         [
             "kernels/nccl_manager.cc",
@@ -93,6 +93,7 @@ tf_cuda_cc_test(
         ],
         [],
     ),
+    tags = ["manual"],  # Disabled until errors finding nvmlShutdown are found.
     deps = if_cuda(
         [
             "@nccl_archive//:nccl",
