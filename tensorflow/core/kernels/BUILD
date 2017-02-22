@@ -32,6 +32,7 @@ load(
     "tf_kernel_library",
     "cc_header_only_library",
 )
+load("@local_config_sycl//sycl:build_defs.bzl", "if_sycl")
 load("//tensorflow:tensorflow.bzl", "tf_cuda_cc_test")
 load("//tensorflow:tensorflow.bzl", "tf_cuda_cc_tests")
 load(
@@ -480,7 +481,7 @@ tf_kernel_library(
     deps = ARRAY_DEPS + [
         "//tensorflow/core:gpu_runtime",
         "//tensorflow/core/debug:debug_io_utils",
-    ],
+    ] + if_sycl(["//tensorflow/core:sycl_runtime"]),
 )
 
 cc_library(
