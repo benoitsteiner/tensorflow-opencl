@@ -74,12 +74,6 @@ def main():
                                     if not flag.startswith(('-MF', '-MD',))
                                     if not '.d' in flag
                                 ]
-
-<<<<<<< HEAD
-          host_compiler_flags[host_compiler_flags.index('-c')] = "--include"
-
-=======
->>>>>>> 4dfeede47... Fixes & Version bump (#33)
           host_compiler_flags = ['-xc++', '-D_GLIBCXX_USE_CXX11_ABI=0', '-DTENSORFLOW_USE_SYCL', '-Wno-unused-variable', '-I', COMPUTECPP_INCLUDE, '-c', bc_out] + host_compiler_flags
           x = subprocess.call([CPU_CXX_COMPILER] + host_compiler_flags)
       return x
