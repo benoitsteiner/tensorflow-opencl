@@ -27,6 +27,10 @@ limitations under the License.
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 #include "tensorflow/core/lib/random/philox_random.h"
 
+#if defined(TENSORFLOW_USE_SYCL)
+#include <CL/sycl.hpp>
+#endif
+
 namespace tensorflow {
 namespace random {
 
@@ -373,7 +377,11 @@ class TruncatedNormalDistribution<SingleSampleGenerator, Eigen::half> {
       BoxMullerFloat(x0, x1, &f[0], &f[1]);
 
       for (int i = 0; i < 2; ++i) {
+#if defined(TENSORFLOW_USE_SYCL)
+        if (cl::sycl::fabs(f[i]) < kTruncateValue) {
+#else
         if (fabs(f[i]) < kTruncateValue) {
+#endif
           results[index++] = Eigen::half(f[i]);
           if (index >= kResultElementCount) {
             return results;
@@ -416,7 +424,11 @@ class TruncatedNormalDistribution<SingleSampleGenerator, float> {
       BoxMullerFloat(x0, x1, &f[0], &f[1]);
 
       for (int i = 0; i < 2; ++i) {
+#if defined(TENSORFLOW_USE_SYCL)
+        if (cl::sycl::fabs(f[i]) < kTruncateValue) {
+#else
         if (fabs(f[i]) < kTruncateValue) {
+#endif
           results[index++] = f[i];
           if (index >= kResultElementCount) {
             return results;
@@ -458,7 +470,11 @@ class TruncatedNormalDistribution<SingleSampleGenerator, double> {
       BoxMullerDouble(x0, x1, x2, x3, &d[0], &d[1]);
 
       for (int i = 0; i < 2; ++i) {
+#if defined(TENSORFLOW_USE_SYCL)
+        if (cl::sycl::fabs(d[i]) < kTruncateValue) {
+#else
         if (fabs(d[i]) < kTruncateValue) {
+#endif
           results[index++] = d[i];
           if (index >= kResultElementCount) {
             return results;
@@ -483,8 +499,17 @@ void BoxMullerFloat(uint32 x0, uint32 x1, float* f0, float* f1) {
     u1 = epsilon;
   }
   const float v1 = 2.0f * M_PI * Uint32ToFloat(x1);
+
+#if defined(TENSORFLOW_USE_SYCL)
+  const float u2 = cl::sycl::sqrt(-2.0f * cl::sycl::log(u1));
+#else
   const float u2 = sqrt(-2.0f * log(u1));
-#if defined(__linux__)
+#endif
+
+#if defined(TENSORFLOW_USE_SYCL)
+  *f0 = cl::sycl::sin(v1);
+  *f1 = cl::sycl::cos(v1);
+#elif defined(__linux__)
   sincosf(v1, f0, f1);
 #else
   *f0 = sinf(v1);
@@ -509,8 +534,18 @@ void BoxMullerDouble(uint32 x0, uint32 x1, uint32 x2, uint32 x3, double* d0,
     u1 = epsilon;
   }
   const double v1 = 2 * M_PI * Uint64ToDouble(x2, x3);
+
+
+#if defined(TENSORFLOW_USE_SYCL)
+  const double u2 = cl::sycl::sqrt(-2.0 * cl::sycl::log(u1));
+#else
   const double u2 = sqrt(-2.0 * log(u1));
-#if defined(__linux__)
+#endif
+
+#if defined(TENSORFLOW_USE_SYCL)
+  *d0 = cl::sycl::sin(v1);
+  *d1 = cl::sycl::cos(v1);
+#elif defined(__linux__)
   sincos(v1, d0, d1);
 #else
   *d0 = sin(v1);
