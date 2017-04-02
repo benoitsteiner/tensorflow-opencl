@@ -434,7 +434,7 @@ ARRAY_DEPS = [
     "//tensorflow/core:proto_text",
     "//tensorflow/core:protos_all_cc",
     "//third_party/eigen3",
-]
+] + if_sycl(["//tensorflow/core:sycl_runtime"])
 
 cc_library(
     name = "array_not_windows",
@@ -466,7 +466,7 @@ tf_kernel_library(
     deps = ARRAY_DEPS + [
         "//tensorflow/core:gpu_runtime",
         "//tensorflow/core/debug:debug_io_utils",
-    ] + if_sycl(["//tensorflow/core:sycl_runtime"]),
+    ],
 )
 
 cc_library(

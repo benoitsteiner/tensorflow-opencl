@@ -125,13 +125,25 @@ Status DoTranspose<SYCLDevice>(const SYCLDevice& d, const Tensor& in,
   CHECK_EQ(in.dims(), perm.size());
   CHECK_EQ(in.dtype(), out->dtype());
   switch (in.dtype()) {
+    case DT_BOOL:
+    case DT_INT8:
+    case DT_UINT8:
+      tensorflow::internal::Transpose<SYCLDevice, uint8>(d, in, perm, out);
+      break;
+
+    case DT_INT16:
+    case DT_UINT16:
+      tensorflow::internal::Transpose<SYCLDevice, uint16>(d, in, perm, out);
+      break;
 
     case DT_FLOAT:
     case DT_INT32:
-      internal::Transpose<SYCLDevice, uint32>(d, in, perm, out);
+      tensorflow::internal::Transpose<SYCLDevice, uint32>(d, in, perm, out);
       break;
+
     case DT_DOUBLE:
-      internal::Transpose<SYCLDevice, uint64>(d, in, perm, out);
+    case DT_INT64:
+      tensorflow::internal::Transpose<SYCLDevice, uint64>(d, in, perm, out);
       break;
 
     default:
