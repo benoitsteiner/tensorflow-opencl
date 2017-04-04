@@ -317,7 +317,7 @@ TF_CALL_GPU_NUMBER_TYPES(REGISTER_SYCL_KERNEL);
                               .HostMemory("elem")         \
                               .HostMemory("output")       \
                               .TypeConstraint<type>("T"), \
-                          StackPushOp<GPUDevice>)
+                          StackPushOp<SYCLDevice>)
 
 REGISTER_SYCL_HOST_KERNEL(int32);
 REGISTER_SYCL_HOST_KERNEL(bool);

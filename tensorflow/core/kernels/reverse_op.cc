@@ -29,10 +29,6 @@ limitations under the License.
 #include "tensorflow/core/platform/logging.h"
 #include "tensorflow/core/util/work_sharder.h"
 
-#ifdef TENSORFLOW_USE_SYCL
-#include "tensorflow/core/common_runtime/sycl/sycl_util.h"
-#endif // TENSORFLOW_USE_SYCL
-
 namespace tensorflow {
 
 typedef Eigen::ThreadPoolDevice CPUDevice;

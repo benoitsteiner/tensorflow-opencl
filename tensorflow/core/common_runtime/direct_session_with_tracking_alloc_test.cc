@@ -177,8 +177,7 @@ y->set_assigned_device_name("/job:localhost/replica:0/task:0/device:SYCL:0");
   (*options.config.mutable_device_count())["CPU"] = 1;
   (*options.config.mutable_device_count())["GPU"] = 1;
 #ifdef TENSORFLOW_USE_SYCL
-  // TODO{lukeiwanski}: Set to 1 once test model for SYCL is fixed
-  (*options.config.mutable_device_count())["SYCL"] = 0;
+  (*options.config.mutable_device_count())["SYCL"] = 1;
 #endif // TENSORFLOW_USE_SYCL
   options.config.set_allow_soft_placement(true);
   options.config.mutable_graph_options()->set_build_cost_model(1);
