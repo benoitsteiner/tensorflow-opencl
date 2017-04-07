@@ -39,6 +39,9 @@ namespace tensorflow {
 
 typedef Eigen::ThreadPoolDevice CPUDevice;
 typedef Eigen::GpuDevice GPUDevice;
+#ifdef TENSORFLOW_USE_SYCL
+typedef Eigen::SyclDevice SYCLDevice;
+#endif // TENSORFLOW_USE_SYCL
 
 namespace {
 
@@ -364,6 +367,24 @@ struct LaunchBatchMatMul<GPUDevice, Scalar> {
 
 #endif  // GOOGLE_CUDA
 
+#ifdef TENSORFLOW_USE_SYCL
+template <typename Scalar>
+struct LaunchBatchMatMul<SYCLDevice, Scalar> {
+  static void Launch(OpKernelContext* context, const Tensor& in_x,
+                     const Tensor& in_y, bool adj_x, bool adj_y, Tensor* out) {
+    auto device = context->eigen_sycl_device();
+    Eigen::array<Eigen::IndexPair<Eigen::DenseIndex>, 1> contract_pairs;
+    contract_pairs[0] = ContractionDims(adj_x, adj_y);
+    auto Tx = in_x.tensor<Scalar, 3>();
+    auto Ty = in_y.tensor<Scalar, 3>();
+    auto Tz = out->tensor<Scalar, 3>();
+    for (auto i = 0; i < in_x.dim_size(0); ++i) {
+      Tz.template chip<2>(i).device(device) = Tx.template chip<2>(i).contract(Ty.template chip<2>(i), contract_pairs);
+    }
+  }
+};
+#endif // TENSORFLOW_USE_SYCL
+
 template <typename Device, typename Scalar>
 class BatchMatMul : public OpKernel {
  public:
@@ -443,4 +464,10 @@ class BatchMatMul : public OpKernel {
       Name("BatchMatMul").Device(DEVICE_GPU).TypeConstraint<TYPE>("T"), \
       BatchMatMul<GPUDevice, TYPE>)
 
+#ifdef TENSORFLOW_USE_SYCL
+#define REGISTER_BATCH_MATMUL_SYCL(TYPE)                                 \
+  REGISTER_KERNEL_BUILDER(                                               \
+      Name("BatchMatMul").Device(DEVICE_SYCL).TypeConstraint<TYPE>("T"), \
+      BatchMatMul<SYCLDevice, TYPE>)
+#endif // TENSORFLOW_USE_SYCL
 }  // end namespace tensorflow
