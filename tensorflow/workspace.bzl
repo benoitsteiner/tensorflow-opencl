@@ -73,7 +73,6 @@ def tf_workspace(path_prefix = "", tf_repo_name = ""):
   native.new_http_archive(
       name = "eigen_archive",
       urls = [
-          "http://bazel-mirror.storage.googleapis.com/bitbucket.org/eigen/eigen/get/123510871143.tar.gz",
           "https://bitbucket.org/benoitsteiner/opencl/get/123510871143.tar.gz",
       ],
       sha256 = "f0d1d09fed01642893ed237c3f41842429f32009bd3f52eb09fd040970641792",
