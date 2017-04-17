@@ -4,7 +4,7 @@ Configuration information for a Session .
 
 
 
-###Member Details
+### Member Details
 
 #### `Env* tensorflow::SessionOptions::env` {#Env_tensorflow_SessionOptions_env}
 

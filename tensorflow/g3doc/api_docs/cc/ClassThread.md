@@ -4,7 +4,7 @@ Represents a thread used to run a Tensorflow function.
 
 
 
-###Member Details
+### Member Details
 
 #### `tensorflow::Thread::Thread()` {#tensorflow_Thread_Thread}
 

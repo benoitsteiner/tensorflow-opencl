@@ -4,7 +4,7 @@ An implementation of Env that forwards all calls to another Env .
 
 May be useful to clients who wish to override just part of the functionality of another Env .
 
-###Member Details
+### Member Details
 
 #### `tensorflow::EnvWrapper::EnvWrapper(Env *t)` {#tensorflow_EnvWrapper_EnvWrapper}
 

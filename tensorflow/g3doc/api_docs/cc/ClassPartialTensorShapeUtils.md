@@ -4,7 +4,7 @@ Static helper routines for ` PartialTensorShape `. Includes a few common predica
 
 
 
-###Member Details
+### Member Details
 
 #### `string tensorflow::PartialTensorShapeUtils::PartialShapeListString(const gtl::ArraySlice< PartialTensorShape > &shapes)` {#string_tensorflow_PartialTensorShapeUtils_PartialShapeListString}
 

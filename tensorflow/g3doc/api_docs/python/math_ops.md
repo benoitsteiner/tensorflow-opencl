@@ -2091,7 +2091,7 @@ Computes the SVD of each inner matrix in `tensor` such that
 # a is a tensor.
 # s is a tensor of singular values.
 # u is a tensor of left singular vectors.
-#v is a tensor of right singular vectors.
+# v is a tensor of right singular vectors.
 s, u, v = svd(a)
 s = svd(a, compute_uv=False)
 ```

@@ -6,7 +6,7 @@ Author: Xin Pan (xpan@google.com, github: panyx0718)
 
 Consultants: Jon Shlens, Pete Warden
 
-###Major Features
+### Major Features
 
 1.  Measure model parameters, float operations, tensor shapes.
 2.  Measure op execution times, requested memory size and device placement.
