@@ -4,7 +4,7 @@ Static helper routines for ` TensorShape `. Includes a few common predicates on 
 
 
 
-###Member Details
+### Member Details
 
 #### `static bool tensorflow::TensorShapeUtils::IsScalar(const TensorShape &shape)` {#static_bool_tensorflow_TensorShapeUtils_IsScalar}
 

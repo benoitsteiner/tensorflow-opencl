@@ -5,7 +5,7 @@ Author: Xin Pan (xpan@google.com, github: panyx0718)
 Consultants: Jon Shlens, Pete Warden
 
 
-###Major Features
+### Major Features
 
 1.  Measure model parameters, float operations, tensor shapes.
 2.  Measure op execution times, requested memory size and device placement.
@@ -442,7 +442,7 @@ TensorFlow checkpoint. It defines _checkpoint_variable op type. It also
 provides checkpointed tensors' values.
 
 
-##Options
+## Options
 
 `-max_depth`: Show ops that are at most this number of hops from starting op in the tree/graph structure.
 

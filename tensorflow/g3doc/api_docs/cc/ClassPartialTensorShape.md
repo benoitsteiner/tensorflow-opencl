@@ -4,7 +4,7 @@ Manages the partially known dimensions of a Tensor and their sizes.
 
 
 
-###Member Details
+### Member Details
 
 #### `tensorflow::PartialTensorShape::PartialTensorShape()` {#tensorflow_PartialTensorShape_PartialTensorShape}
 

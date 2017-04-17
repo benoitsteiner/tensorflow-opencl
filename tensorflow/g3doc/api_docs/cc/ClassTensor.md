@@ -4,7 +4,7 @@ Represents an n-dimensional array of values.
 
 
 
-###Member Details
+### Member Details
 
 #### `tensorflow::Tensor::Tensor()` {#tensorflow_Tensor_Tensor}
 

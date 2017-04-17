@@ -8,7 +8,7 @@ A tensor&apos;s shape is denoted by its number of dimensions and a size for each
 
 If you know the exact shape of your Tensor when you create the TensorShape object, you can specify it then, or you can create a TensorShape with zero dimensions and one element, and call AddDim() to add dimensions later.
 
-###Member Details
+### Member Details
 
 #### `uint8 tensorflow::TensorShape::buf[16][16]` {#uint8_tensorflow_TensorShape_buf_16_}
 

@@ -4,7 +4,7 @@ A file abstraction for sequential writing.
 
 The implementation must provide buffering since callers may append small fragments at a time to the file.
 
-###Member Details
+### Member Details
 
 #### `tensorflow::WritableFile::WritableFile()` {#tensorflow_WritableFile_WritableFile}
 

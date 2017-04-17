@@ -41,7 +41,7 @@ A Session allows concurrent calls to Run() , though a Session must be created / 
 
 Only one thread must call Close() , and Close() must only be called after all other calls to Run() have returned.
 
-###Member Details
+### Member Details
 
 #### `tensorflow::Session::Session()` {#tensorflow_Session_Session}
 

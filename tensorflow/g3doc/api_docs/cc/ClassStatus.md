@@ -4,7 +4,7 @@ Denotes success or failure of a call in Tensorflow.
 
 
 
-###Member Details
+### Member Details
 
 #### `tensorflow::Status::Status()` {#tensorflow_Status_Status}
 
